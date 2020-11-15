@@ -85,7 +85,7 @@ public class Main extends JavaPlugin implements Listener {
     @EventHandler
     public void onManger(PlayerItemConsumeEvent event)
     {
-
+        superdatas.get(event.getPlayer()).Manger(event.getItem().getType());
     }
 
     public void createBoard(Player p)
@@ -179,7 +179,7 @@ public class Main extends JavaPlugin implements Listener {
         Score soif = p.getScoreboard().getObjective("stats").getScore("Eau :");
         Score temp = p.getScoreboard().getObjective("stats").getScore("Temperature :");
 
-        varieteAlim.setScore(10);
+        varieteAlim.setScore((int)(ps.getVarieteAlimentaire()*100.0));
         soif.setScore(10);
         temp.setScore((int)ps.getTemperature());
     }

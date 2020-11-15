@@ -2,20 +2,30 @@ package Principal;
 
 import org.bukkit.Material;
 import org.bukkit.WeatherType;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PlayerSuperData {
+    static private int TailleMenu = 5;
     Player p;
+    List<Material> Menu;
+    double eau;
     public PlayerSuperData(Player p)
     {
         this.p = p;
+        Menu = new ArrayList<>();
+        eau = 100.0;
     }
     public double getTemperature()
     {
-        double temperatureBiome = (100.0*p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),p.getLocation().getBlockZ()))-80.0;
+        double temperatureBiome = (100.0*(p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),p.getLocation().getBlockZ())-0.6))-10.0;
         double tempSol = getIntensiteSoleil();
-        double tempProfondeur = 50.0-(100*p.getLocation().getBlockY()/200.0);
+        double tempProfondeur = 50.0-(100*(p.getLocation().getBlockY()-45)/205.0);
         double tequip = 0;
         if(p.getEquipment().getBoots() != null && p.getEquipment().getBoots().getType() == Material.LEATHER_BOOTS)
         {
@@ -62,5 +72,25 @@ public class PlayerSuperData {
             I=I/2.0;
         }
         return I*30;
+    }
+    public void Manger(Material i)
+    {
+        Menu.add(i);
+        if(Menu.size()>TailleMenu)
+        {
+            Menu.remove(0);
+        }
+    }
+
+    public double getVarieteAlimentaire()
+    {
+        List<Material> alimUniques = new ArrayList<>();
+        for (Material m :Menu) {
+            if(!alimUniques.contains(m))
+            {
+                alimUniques.add(m);
+            }
+        }
+        return alimUniques.size()/(double)TailleMenu;
     }
 }
