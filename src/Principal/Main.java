@@ -85,7 +85,9 @@ public class Main extends JavaPlugin implements Listener {
     @EventHandler
     public void onManger(PlayerItemConsumeEvent event)
     {
-        superdatas.get(event.getPlayer()).Manger(event.getItem().getType());
+        Material mange = event.getItem().getType();
+        PlayerSuperData psd = superdatas.get(event.getPlayer().getName());
+        psd.Manger(mange);
     }
 
     public void createBoard(Player p)
@@ -164,23 +166,28 @@ public class Main extends JavaPlugin implements Listener {
     }
     private void playerUpdate(Player p)
     {
-        scoreboardUpdate(superdatas.get(p.getName()));
-    }
-    private void scoreboardUpdate(PlayerSuperData ps)
-    {
-        Player p = ps.p;
-        if(ps.estSousPluie()) {
+        PlayerSuperData sd = superdatas.get(p.getName());
+        sd.updateSoif();
+        if(sd.estSousPluie()) {
             PotionEffect tox = new PotionEffect(PotionEffectType.CONFUSION, 10 * 20, 3);
             PotionEffect acide = new PotionEffect(PotionEffectType.POISON, 1 * 20, 3);
             tox.apply(p);
             acide.apply(p);
         }
+        scoreboardUpdate(sd);
+    }
+    private void scoreboardUpdate(PlayerSuperData ps)
+    {
+        Player p = ps.p;
+
         Score varieteAlim = p.getScoreboard().getObjective("stats").getScore("Equilibre Alimentaire :");
         Score soif = p.getScoreboard().getObjective("stats").getScore("Eau :");
         Score temp = p.getScoreboard().getObjective("stats").getScore("Temperature :");
 
+
+
         varieteAlim.setScore((int)(ps.getVarieteAlimentaire()*100.0));
-        soif.setScore(10);
+        soif.setScore((int)(ps.getEau()));
         temp.setScore((int)ps.getTemperature());
     }
 

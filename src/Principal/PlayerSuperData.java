@@ -14,6 +14,11 @@ public class PlayerSuperData {
     static private int TailleMenu = 5;
     Player p;
     List<Material> Menu;
+
+    public double getEau() {
+        return eau;
+    }
+
     double eau;
     public PlayerSuperData(Player p)
     {
@@ -25,7 +30,7 @@ public class PlayerSuperData {
     {
         double temperatureBiome = (100.0*(p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),p.getLocation().getBlockZ())-0.6))-10.0;
         double tempSol = getIntensiteSoleil();
-        double tempProfondeur = 50.0-(100*(p.getLocation().getBlockY()-45)/205.0);
+        double tempProfondeur = 15-(25*(p.getLocation().getBlockY()-45)/205.0);
         double tequip = 0;
         if(p.getEquipment().getBoots() != null && p.getEquipment().getBoots().getType() == Material.LEATHER_BOOTS)
         {
@@ -76,9 +81,13 @@ public class PlayerSuperData {
     public void Manger(Material i)
     {
         Menu.add(i);
-        if(Menu.size()>TailleMenu)
-        {
-            Menu.remove(0);
+        if(i == Material.POTION) {
+            eau = Math.min(50+eau,100.0);
+        }
+        else {
+            if (Menu.size() > TailleMenu) {
+                Menu.remove(0);
+            }
         }
     }
 
@@ -92,5 +101,11 @@ public class PlayerSuperData {
             }
         }
         return alimUniques.size()/(double)TailleMenu;
+    }
+
+    public void updateSoif()
+    {
+        double delta = Math.max(0.025,getTemperature()*0.025/9);
+        eau = Math.max(0,eau - delta);
     }
 }
