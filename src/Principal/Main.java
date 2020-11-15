@@ -12,11 +12,14 @@ import org.bukkit.entity.Zombie;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scoreboard.*;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import java.util.*;
@@ -44,6 +47,7 @@ public class Main extends JavaPlugin implements Listener {
         super.onEnable();
         this.getServer().getLogger().info("TurboStart");
         r = new Random();
+        superdatas = new HashMap<>();
         Material[] matArr = {Material.STONE_BRICK_WALL,Material.STONE_BRICK_SLAB,Material.STONE_BRICK_STAIRS,Material.STONE_BRICKS};
         tntOnly = Arrays.asList(matArr);
         this.getServer().getPluginManager().registerEvents(this,this);
@@ -57,13 +61,15 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public void onPlayerConnexion(PlayerSpawnLocationEvent event)
+    public void onPlayerConnexion(PlayerJoinEvent event)
     {
         Player p = event.getPlayer();
         if(!superdatas.containsKey(p.getName()))
         {
             superdatas.put(p.getName(),new PlayerSuperData(p));
         }
+        createBoard(p);
+
     }
     @EventHandler
     public void onBlockDamage(BlockDamageEvent event)
@@ -75,6 +81,26 @@ public class Main extends JavaPlugin implements Listener {
             event.setCancelled(true);
         }
 
+    }
+    @EventHandler
+    public void onManger(PlayerItemConsumeEvent event)
+    {
+
+    }
+
+    public void createBoard(Player p)
+    {
+        ScoreboardManager manager = Bukkit.getScoreboardManager();
+        Scoreboard sb = manager.getNewScoreboard();
+        Objective obj = sb.registerNewObjective("stats","dummy","Statistiques");
+        obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+        Score variteAlim = obj.getScore("Equilibre Alimentaire :");
+        variteAlim.setScore(1);
+        Score soif = obj.getScore("Eau :");
+        soif.setScore(1);
+        Score temp = obj.getScore("Temperature :");
+        temp.setScore(1);
+        p.setScoreboard(sb);
     }
 
 
@@ -95,6 +121,7 @@ public class Main extends JavaPlugin implements Listener {
                     //Joueur Meurt
                     Zombie zp = (Zombie)z.getWorld().spawnEntity(p.getLocation(),EntityType.ZOMBIE);
                     zp.getEquipment().setArmorContents(p.getEquipment().getArmorContents().clone());
+                    p.getEquipment().clear();
                     zp.setCustomName("(Z)"+p.getName());
                     zp.setCustomNameVisible(true);
                 }
@@ -131,11 +158,24 @@ public class Main extends JavaPlugin implements Listener {
         List<Player> lp = (List<Player>)this.getServer().getOnlinePlayers();
         for (Player p: lp) {
             superdatas.put(p.getName(),new PlayerSuperData(p));
+            createBoard(p);
         }
 
     }
     private void playerUpdate(Player p)
     {
+        scoreboardUpdate(superdatas.get(p.getName()));
+    }
+    private void scoreboardUpdate(PlayerSuperData ps)
+    {
+        Player p = ps.p;
 
+        Score varieteAlim = p.getScoreboard().getObjective("stats").getScore("Equilibre Alimentaire :");
+        Score soif = p.getScoreboard().getObjective("stats").getScore("Eau :");
+        Score temp = p.getScoreboard().getObjective("stats").getScore("Temperature :");
+
+        varieteAlim.setScore((int)System.currentTimeMillis());
+        soif.setScore(10);
+        temp.setScore(10);
     }
 }
