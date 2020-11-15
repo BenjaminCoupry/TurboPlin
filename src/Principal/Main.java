@@ -1,17 +1,18 @@
 package Principal;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
+import org.bukkit.entity.*;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.AnvilInventory;
@@ -50,6 +51,7 @@ public class Main extends JavaPlugin implements Listener {
     public void onEnable() {
         super.onEnable();
         this.getServer().getLogger().info("TurboStart");
+        Recettes.ajouterRecettes(this);
         r = new Random();
         superdatas = new HashMap<>();
         Material[] matArr = {Material.STONE_BRICK_WALL,Material.STONE_BRICK_SLAB,Material.STONE_BRICK_STAIRS,Material.STONE_BRICKS};
@@ -151,6 +153,49 @@ public class Main extends JavaPlugin implements Listener {
         }
     }
 
+    @EventHandler
+    public void onFireArrowShoot(EntityShootBowEvent e) {
+        if (e.getEntity() instanceof Player) {
+            Player p = (Player) e.getEntity();
+            ItemStack arrow = getArrowStack(p);
+
+            if (arrow != null && Recettes.isNuke(arrow)) {
+                this.getServer().getLogger().info("NUKE");
+                e.getProjectile().setGlowing(true);
+                e.getProjectile().setFireTicks(20*30);
+                e.getProjectile().setVelocity(e.getProjectile().getVelocity().multiply(4));
+                p.playEffect(p.getLocation(), Effect.WITHER_SHOOT,null);
+                e.getProjectile().setCustomNameVisible(true);
+                e.getProjectile().setCustomName("!NUKE!");
+            }
+        }
+    }
+
+    ItemStack getArrowStack(Player player) {
+        for (ItemStack stack : player.getInventory().getContents()) {
+            if (stack != null && stack.getType() == Material.ARROW) {
+                return stack;
+            }
+        }
+        return null;
+    }
+
+
+
+    @EventHandler
+    public void onArrowHit(ProjectileHitEvent event)
+    {
+
+        Entity p = event.getEntity();
+        this.getServer().getLogger().info(p.getCustomName().toString());
+        if(p.getCustomName().contains( "!NUKE!") && p.isGlowing()) {
+            this.getServer().getLogger().info("NUKE HIT");
+            p.getWorld().strikeLightning(p.getLocation());
+            p.getWorld().createExplosion(event.getHitBlock().getLocation(),40,true,true);
+            p.remove();
+
+        }
+    }
     private void playersUpdate()
     {
         List<Player> lp = (List<Player>)this.getServer().getOnlinePlayers();
@@ -174,9 +219,9 @@ public class Main extends JavaPlugin implements Listener {
         sd.updateSoif();
         if(sd.estSousPluie()) {
             ItemStack casque = p.getEquipment().getHelmet();
-            if(casque != null && casque.getType() == Material.CHAINMAIL_HELMET) {
+            if(casque != null && casque.getType() == Material.CHAINMAIL_HELMET && casque.getItemMeta().hasLore()) {
 
-                if(r.nextDouble()<0.01) {
+                if(r.nextDouble()<1.0/15.0) {
                     Damageable c = ((Damageable) casque.getItemMeta());
                     int D_next = c.getDamage() + 1;
                     c.setDamage(D_next);
