@@ -1,0 +1,7 @@
+main: Principal.Main
+name: TurboPlin
+version: '1.0'
+description: Le plugin du futur
+load: POSTWORLD
+author: IceStorm310
+api-version: 1.16

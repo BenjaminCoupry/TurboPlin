@@ -18,6 +18,7 @@ import java.util.List;
 
 public class Main extends JavaPlugin implements Listener {
 
+    //Materiaux
     List<Material> tntOnly;
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -32,6 +33,7 @@ public class Main extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         super.onEnable();
+        this.getServer().getLogger().info("TurboStart");
         Material[] matArr = {Material.STONE_BRICK_WALL,Material.STONE_BRICK_SLAB,Material.STONE_BRICK_STAIRS,Material.STONE_BRICKS};
         tntOnly = Arrays.asList(matArr);
         this.getServer().getPluginManager().registerEvents(this,this);

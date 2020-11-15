@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="turboPlin">
+    <output-path>$PROJECT_DIR$/../../Spigot/plugins</output-path>
+    <root id="archive" name="turboPlin.jar">
+      <element id="module-output" name="TurboPlin" />
+      <element id="file-copy" path="$PROJECT_DIR$/ressources/plugin.yml" />
+    </root>
+  </artifact>
+</component>
