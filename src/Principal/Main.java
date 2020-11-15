@@ -20,6 +20,7 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class Main extends JavaPlugin implements Listener {
 
@@ -27,6 +28,7 @@ public class Main extends JavaPlugin implements Listener {
 
     //Materiaux
     List<Material> tntOnly;
+    Random r;
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         return super.onCommand(sender, command, label, args);
@@ -41,6 +43,7 @@ public class Main extends JavaPlugin implements Listener {
     public void onEnable() {
         super.onEnable();
         this.getServer().getLogger().info("TurboStart");
+        r = new Random();
         Material[] matArr = {Material.STONE_BRICK_WALL,Material.STONE_BRICK_SLAB,Material.STONE_BRICK_STAIRS,Material.STONE_BRICKS};
         tntOnly = Arrays.asList(matArr);
         this.getServer().getPluginManager().registerEvents(this,this);
@@ -70,13 +73,13 @@ public class Main extends JavaPlugin implements Listener {
                 PotionEffect ep = new PotionEffect(PotionEffectType.POISON, 7 * 20, 2);
                 PotionEffect eh = new PotionEffect(PotionEffectType.HUNGER, 30 * 20, 2);
                 PotionEffect ej = new PotionEffect(PotionEffectType.JUMP, 4 * 20, 2);
-                PotionEffect el = new PotionEffect(PotionEffectType.LEVITATION, 4 * 20, 2);
+                PotionEffect el = new PotionEffect(PotionEffectType.LEVITATION, 2 * 20, 2);
                 ep.apply(p);eh.apply(p);ej.apply(p);el.apply(p);
                 if (p.getHealth() - event.getDamage() <= 0.5) {
                     //Joueur Meurt
                     Zombie zp = (Zombie)z.getWorld().spawnEntity(p.getLocation(),EntityType.ZOMBIE);
                     zp.getEquipment().setArmorContents(p.getEquipment().getArmorContents().clone());
-                    zp.setCustomName("(Z)"+p.getCustomName());
+                    zp.setCustomName("(Z)"+p.getName());
                     zp.setCustomNameVisible(true);
                 }
             }
@@ -90,7 +93,10 @@ public class Main extends JavaPlugin implements Listener {
                 eb.apply(p);
                 if (z.getHealth() - event.getDamage() <= 0.5) {
                     //Zombie Meurt
-                    z.getWorld().createExplosion(z.getLocation(), 3);
+                    if(r.nextDouble()<0.2) {
+                        z.getWorld().createExplosion(z.getLocation(), r.nextFloat()*5,true,true);
+                        z.getWorld().strikeLightning(z.getLocation());
+                    }
                 }
             }
         }
