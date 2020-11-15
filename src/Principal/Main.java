@@ -1,5 +1,6 @@
 package Principal;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -16,11 +17,9 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Main extends JavaPlugin implements Listener {
 
@@ -29,6 +28,7 @@ public class Main extends JavaPlugin implements Listener {
     //Materiaux
     List<Material> tntOnly;
     Random r;
+    Map<String,PlayerSuperData> superdatas;
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         return super.onCommand(sender, command, label, args);
@@ -47,8 +47,24 @@ public class Main extends JavaPlugin implements Listener {
         Material[] matArr = {Material.STONE_BRICK_WALL,Material.STONE_BRICK_SLAB,Material.STONE_BRICK_STAIRS,Material.STONE_BRICKS};
         tntOnly = Arrays.asList(matArr);
         this.getServer().getPluginManager().registerEvents(this,this);
+        playersSetup();
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+            @Override
+            public void run() {
+                playersUpdate();
+            }
+        },0,5);
     }
 
+    @EventHandler
+    public void onPlayerConnexion(PlayerSpawnLocationEvent event)
+    {
+        Player p = event.getPlayer();
+        if(!superdatas.containsKey(p.getName()))
+        {
+            superdatas.put(p.getName(),new PlayerSuperData(p));
+        }
+    }
     @EventHandler
     public void onBlockDamage(BlockDamageEvent event)
     {
@@ -100,5 +116,26 @@ public class Main extends JavaPlugin implements Listener {
                 }
             }
         }
+    }
+
+    private void playersUpdate()
+    {
+        List<Player> lp = (List<Player>)this.getServer().getOnlinePlayers();
+        for (Player p: lp) {
+            playerUpdate(p);
+        }
+
+    }
+    private void playersSetup()
+    {
+        List<Player> lp = (List<Player>)this.getServer().getOnlinePlayers();
+        for (Player p: lp) {
+            superdatas.put(p.getName(),new PlayerSuperData(p));
+        }
+
+    }
+    private void playerUpdate(Player p)
+    {
+
     }
 }
