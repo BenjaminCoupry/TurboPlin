@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDamageEvent;
@@ -157,6 +158,7 @@ public class Main extends JavaPlugin implements Listener {
     public void onFireArrowShoot(EntityShootBowEvent e) {
         if (e.getEntity() instanceof Player) {
             Player p = (Player) e.getEntity();
+
             ItemStack arrow = getArrowStack(p);
 
             if (arrow != null && Recettes.isNuke(arrow)) {
@@ -181,6 +183,12 @@ public class Main extends JavaPlugin implements Listener {
     }
 
 
+    public void callCommande(String command)
+    {
+        ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
+        Bukkit.dispatchCommand(console, command);
+    }
+
 
     @EventHandler
     public void onArrowHit(ProjectileHitEvent event)
@@ -190,6 +198,9 @@ public class Main extends JavaPlugin implements Listener {
         this.getServer().getLogger().info(p.getCustomName().toString());
         if(p.getCustomName().contains( "!NUKE!") && p.isGlowing()) {
             this.getServer().getLogger().info("NUKE HIT");
+            callCommande("weather thunder 20000");
+            callCommande("time set night");
+            callCommande("say la pluie toxique va tomber...");
             p.getWorld().strikeLightning(p.getLocation());
             p.getWorld().createExplosion(event.getHitBlock().getLocation(),40,true,true);
             p.remove();
