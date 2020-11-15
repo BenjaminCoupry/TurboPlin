@@ -170,12 +170,14 @@ public class Main extends JavaPlugin implements Listener {
     {
         Player p = ps.p;
 
+        int temperatureBiome = (int)(100.0*p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),p.getLocation().getBlockZ()));
+
         Score varieteAlim = p.getScoreboard().getObjective("stats").getScore("Equilibre Alimentaire :");
         Score soif = p.getScoreboard().getObjective("stats").getScore("Eau :");
         Score temp = p.getScoreboard().getObjective("stats").getScore("Temperature :");
 
-        varieteAlim.setScore((int)System.currentTimeMillis());
+        varieteAlim.setScore(10);
         soif.setScore(10);
-        temp.setScore(10);
+        temp.setScore(temperatureBiome);
     }
 }
