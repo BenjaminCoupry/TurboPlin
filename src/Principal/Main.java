@@ -14,6 +14,10 @@ import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.AnvilInventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -169,10 +173,27 @@ public class Main extends JavaPlugin implements Listener {
         PlayerSuperData sd = superdatas.get(p.getName());
         sd.updateSoif();
         if(sd.estSousPluie()) {
-            PotionEffect tox = new PotionEffect(PotionEffectType.CONFUSION, 10 * 20, 3);
-            PotionEffect acide = new PotionEffect(PotionEffectType.POISON, 1 * 20, 3);
-            tox.apply(p);
-            acide.apply(p);
+            ItemStack casque = p.getEquipment().getHelmet();
+            if(casque != null && casque.getType() == Material.CHAINMAIL_HELMET) {
+
+                if(r.nextDouble()<0.01) {
+                    Damageable c = ((Damageable) casque.getItemMeta());
+                    int D_next = c.getDamage() + 1;
+                    c.setDamage(D_next);
+                    casque.setItemMeta((ItemMeta) c);
+                    if(Material.CHAINMAIL_HELMET.getMaxDurability()<D_next)
+                    {
+                        p.getEquipment().setHelmet(null);
+                    }
+                }
+
+            }
+            else {
+                PotionEffect tox = new PotionEffect(PotionEffectType.CONFUSION, 10 * 20, 3);
+                PotionEffect acide = new PotionEffect(PotionEffectType.POISON, 1 * 20, 3);
+                tox.apply(p);
+                acide.apply(p);
+            }
         }
         scoreboardUpdate(sd);
     }
