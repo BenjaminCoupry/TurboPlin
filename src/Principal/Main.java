@@ -7,14 +7,17 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.EventHandler;
 import org.bukkit.potion.PotionEffect;
@@ -63,7 +66,7 @@ public class Main extends JavaPlugin implements Listener {
         r = new Random();
         superdatas = new HashMap<>();
         UI=new HashMap<>();
-        Material[] matArr = {Material.STONE_BRICK_WALL,Material.STONE_BRICK_SLAB,Material.STONE_BRICK_STAIRS,Material.STONE_BRICKS};
+        Material[] matArr = {Material.STONE_BRICK_WALL,Material.STONE_BRICK_SLAB,Material.STONE_BRICK_STAIRS,Material.STONE_BRICKS,Material.IRON_DOOR};
         tntOnly = Arrays.asList(matArr);
         this.getServer().getPluginManager().registerEvents(this,this);
         playersSetup();
@@ -77,6 +80,26 @@ public class Main extends JavaPlugin implements Listener {
 
 
     //Events
+
+    @EventHandler
+    public void onPlayerClick(PlayerInteractEvent event)
+    {
+        if(event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            Player p = event.getPlayer();
+            long cd = superdatas.get(p.getName()).cooldown;
+            if(System.currentTimeMillis()-cd>300) {
+                superdatas.get(p.getName()).cooldown = System.currentTimeMillis();
+                if (event.hasBlock()) {
+                    Block b = event.getClickedBlock();
+                    if (p.getInventory().getItemInMainHand() != null) {
+                        ItemStack it = p.getInventory().getItemInMainHand();
+                        SecurityDoor.actionSec(it, b,p);
+                    }
+                }
+            }
+        }
+    }
+
     @EventHandler
     public void onPlayerConnexion(PlayerJoinEvent event)
     {
@@ -88,6 +111,9 @@ public class Main extends JavaPlugin implements Listener {
     public void onPlayerSpawn(PlayerRespawnEvent event)
     {
         callCommande("say respawn");
+        if(superdatas.containsKey(event.getPlayer().getName())) {
+            superdatas.remove(event.getPlayer().getName());
+        }
         superdatas.put(event.getPlayer().getName(), new PlayerSuperData(event.getPlayer()));
     }
 
@@ -128,7 +154,9 @@ public class Main extends JavaPlugin implements Listener {
                     //Joueur Meurt
                     Zombie zp = (Zombie)z.getWorld().spawnEntity(p.getLocation(),EntityType.ZOMBIE);
                     zp.getEquipment().setArmorContents(p.getEquipment().getArmorContents().clone());
-                    p.getEquipment().clear();
+                    for(ItemStack is : p.getInventory()) {
+                        p.getWorld().dropItemNaturally(p.getLocation(),is);
+                    }
                     zp.setCustomName("(Z)"+p.getName());
                     zp.setCustomNameVisible(true);
                 }
@@ -174,18 +202,21 @@ public class Main extends JavaPlugin implements Listener {
     @EventHandler
     public void onArrowHit(ProjectileHitEvent event)
     {
+        if(event != null) {
+            Entity p = event.getEntity();
+            if (p!=null && p.isCustomNameVisible()) {
+                this.getServer().getLogger().info(p.getCustomName().toString());
+                if (p.getCustomName().contains("!NUKE!") && p.isGlowing()) {
+                    this.getServer().getLogger().info("NUKE HIT");
+                    callCommande("weather thunder 20000");
+                    p.getWorld().setTime(12540);
+                    callCommande("say la pluie toxique va tomber...");
+                    p.getWorld().strikeLightning(p.getLocation());
+                    p.getWorld().createExplosion(p.getLocation(), 48, true, true);
+                    p.remove();
 
-        Entity p = event.getEntity();
-        this.getServer().getLogger().info(p.getCustomName().toString());
-        if(p.getCustomName().contains( "!NUKE!") && p.isGlowing()) {
-            this.getServer().getLogger().info("NUKE HIT");
-            callCommande("weather thunder 20000");
-            p.getWorld().setTime(12540);
-            callCommande("say la pluie toxique va tomber...");
-            p.getWorld().strikeLightning(p.getLocation());
-            p.getWorld().createExplosion(event.getHitBlock().getLocation(),40,true,true);
-            p.remove();
-
+                }
+            }
         }
     }
 
@@ -279,6 +310,12 @@ public class Main extends JavaPlugin implements Listener {
 
 
     //Utils
+    public static String getHashst(String s)
+    {
+        String hash = Integer.toString(s.hashCode());
+        return hash.substring(0,Math.min(14,hash.length()-1));
+    }
+
     public static void callCommande(String command)
     {
         ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();

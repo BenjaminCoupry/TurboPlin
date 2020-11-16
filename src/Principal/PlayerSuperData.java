@@ -33,10 +33,12 @@ public class PlayerSuperData {
     double temperature;
     List<Material> Menu;
     double eau;
+    long cooldown;
 
 
     public PlayerSuperData(Player p)
     {
+        cooldown =System.currentTimeMillis();
         this.p = p;
         Menu = new ArrayList<>();
         temperature =20;
@@ -337,6 +339,10 @@ public class PlayerSuperData {
         if(b.getType() == Material.FROSTED_ICE)
         {
             return -4;
+        }
+        if(b.getType() == Material.WATER)
+        {
+            return -0.11;
         }
         if(b.getType() == Material.BLUE_ICE)
         {
