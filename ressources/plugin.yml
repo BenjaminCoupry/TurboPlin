@@ -5,3 +5,5 @@ description: Le plugin du futur
 load: POSTWORLD
 author: IceStorm310
 api-version: 1.16
+commands:
+  stat:

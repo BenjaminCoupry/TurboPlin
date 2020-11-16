@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Recettes {
+
+    //Recettes
     public static ShapedRecipe getRChainmailHelmetRecipe(Plugin p)
     {
 
@@ -59,11 +61,28 @@ public class Recettes {
 
         return recipe;
     }
+
+    public static ShapedRecipe getNukeRecipe(Plugin p)
+    {
+        ItemStack item =getNuke();
+        NamespacedKey key = new NamespacedKey(p,"Nuke");
+        ShapedRecipe recipe = new ShapedRecipe(key,item);
+        recipe.shape("DDD","DAD","DTD");
+        recipe.setIngredient('D',Material.DIAMOND_BLOCK);
+        recipe.setIngredient('A',Material.GHAST_TEAR);
+        recipe.setIngredient('T',Material.TNT_MINECART);
+
+        return recipe;
+    }
+
+
+    //Ajouts
     public static void ajouterRecettesThermiques(Plugin p,Material concerne)
     {
         Bukkit.addRecipe(getEquipTempRecipe(p,"Chaud",concerne));
         Bukkit.addRecipe(getEquipTempRecipe(p,"Froid",concerne));
     }
+
     public static void ajouterRecettesThermiques(Plugin p)
     {
         ajouterRecettesThermiques(p,Material.LEATHER_HELMET);
@@ -88,6 +107,44 @@ public class Recettes {
 
     }
 
+    public static void ajouterRecettes(Plugin p)
+    {
+        Bukkit.addRecipe(getRChainmailHelmetRecipe(p));
+        Bukkit.addRecipe(getNukeRecipe(p));
+        ajouterRecettesThermiques(p);
+    }
+
+
+    //Utils
+    private static ItemStack getNuke()
+    {
+        ItemStack nuke = new ItemStack(Material.ARROW);
+        ItemMeta meta = nuke.getItemMeta();
+        meta.setDisplayName(ChatColor.RED+""+ChatColor.BOLD+"Nuke !");
+        List<String> Lore = new ArrayList<>();
+        Lore.add("");
+        Lore.add(ChatColor.GOLD+""+ChatColor.ITALIC+"DESTRUCTION");
+        meta.setLore(Lore);
+        nuke.setItemMeta(meta);
+        return nuke;
+
+    }
+
+    public static boolean isNuke(ItemStack I)
+    {
+        if(I.getType() == Material.ARROW)
+        {
+            if(I.getItemMeta().getDisplayName().contains("Nuke !"))
+            {
+                if(I.getItemMeta().hasLore())
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static Material getModifTemp(String mod)
     {
         if(mod=="Chaud")
@@ -102,55 +159,5 @@ public class Recettes {
         {
             return null;
         }
-    }
-
-
-    public static ShapedRecipe getNukeRecipe(Plugin p)
-    {
-        ItemStack item =getNuke();
-        NamespacedKey key = new NamespacedKey(p,"Nuke");
-        ShapedRecipe recipe = new ShapedRecipe(key,item);
-        recipe.shape("DDD","DAD","DTD");
-        recipe.setIngredient('D',Material.DIAMOND_BLOCK);
-        recipe.setIngredient('A',Material.GHAST_TEAR);
-        recipe.setIngredient('T',Material.TNT_MINECART);
-
-        return recipe;
-    }
-
-
-    public static void ajouterRecettes(Plugin p)
-    {
-        Bukkit.addRecipe(getRChainmailHelmetRecipe(p));
-        Bukkit.addRecipe(getNukeRecipe(p));
-        ajouterRecettesThermiques(p);
-    }
-
-    private static ItemStack getNuke()
-    {
-        ItemStack nuke = new ItemStack(Material.ARROW);
-        ItemMeta meta = nuke.getItemMeta();
-        meta.setDisplayName(ChatColor.RED+""+ChatColor.BOLD+"Nuke !");
-        List<String> Lore = new ArrayList<>();
-        Lore.add("");
-        Lore.add(ChatColor.GOLD+""+ChatColor.ITALIC+"DESTRUCTION");
-        meta.setLore(Lore);
-        nuke.setItemMeta(meta);
-        return nuke;
-
-    }
-    public static boolean isNuke(ItemStack I)
-    {
-        if(I.getType() == Material.ARROW)
-        {
-            if(I.getItemMeta().getDisplayName().contains("Nuke !"))
-            {
-                if(I.getItemMeta().hasLore())
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

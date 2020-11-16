@@ -1,5 +1,6 @@
 package Principal;
 
+import net.minecraft.server.v1_16_R2.WorldGenFeatureOceanRuin;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.WeatherType;
@@ -20,28 +21,20 @@ import java.util.List;
 import java.util.Random;
 
 public class PlayerSuperData {
+
+    public void setP(Player p) {
+        this.p = p;
+    }
+
     static private int TailleMenu = 7;
     Player p;
-
-    public double getVarieteAlimentaire() {
-        return varieteAlimentaire;
-    }
-
+    String[] statuts;
     double varieteAlimentaire;
-    public double getTemperature() {
-        return temperature;
-    }
-
     double temperature;
-
-
     List<Material> Menu;
-
-    public double getEau() {
-        return eau;
-    }
-
     double eau;
+
+
     public PlayerSuperData(Player p)
     {
         this.p = p;
@@ -49,21 +42,58 @@ public class PlayerSuperData {
         temperature =20;
         eau = 100.0;
         varieteAlimentaire = 0;
+        statuts = new String[4];
+        statuts[0]="";
+        statuts[1]="";
+        statuts[2]="";
+        statuts[3]="";
     }
+
+
+
+    //Calculateurs
     public double calcTemperature()
     {
-        double temperatureBiome = (100.0*(p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),p.getLocation().getBlockZ())-0.6))-10.0;
+        double temperatureBiome = getTempBiome();
         double tempSol = getIntensiteSoleil();
-        double tempProfondeur = 15-(25*(p.getLocation().getBlockY()-45)/205.0);
+        double tempProfondeur = getTempProfondeur();
         double tequip = getTempEquipement();
         double envir = getTempObjEnvir();
         return temperatureBiome+tempSol+tempProfondeur+tequip+envir;
     }
 
+    public double calcVarieteAlimentaire()
+    {
+        List<Material> alimUniques = new ArrayList<>();
+        for (Material m :Menu) {
+            if(!alimUniques.contains(m))
+            {
+                alimUniques.add(m);
+            }
+        }
+        return 100.0*alimUniques.size()/(double)TailleMenu;
+    }
+
+
+    //Updates
     public void updateTemperature()
     {
         temperature = calcTemperature();
     }
+
+    public void updateVarieteAlimentaire()
+    {
+        varieteAlimentaire = calcVarieteAlimentaire();
+    }
+
+    public void updateSoif()
+    {
+        double delta = Math.max(0.025,getTemperature()*0.025/9);
+        eau = Math.max(0,eau - delta);
+    }
+
+
+    //Getters
     public double getTempEquipement()
     {
         EntityEquipment e= p.getEquipment();
@@ -74,6 +104,110 @@ public class PlayerSuperData {
         tequip += getTempChestplate(e);
         tequip += getTempHelmet(e);
         return tequip;
+    }
+
+    public double getEau() {
+        return eau;
+    }
+
+    public double getTemperature() {
+        return temperature;
+    }
+
+    public double getVarieteAlimentaire() {
+        return varieteAlimentaire;
+    }
+
+    public Player getP() {
+        return p;
+    }
+
+    public String getStatusString()
+    {
+        return "Temperature : "+statuts[0]+'\n'
+                +"Nourriture : "+statuts[1]+'\n'
+                +"Abri : "+statuts[2]+'\n'
+                +"Eau : "+statuts[3];
+    }
+
+    public double getIntensiteSoleil()
+    {
+        double temps = p.getWorld().getTime();
+        temps = (temps + 776)%23992;
+        if(temps>13562)
+        {
+            temps =13562;
+        }
+        double k = (double)temps/13562.0;
+        double I = (1.0-Math.cos(k*2.0*Math.PI))/2.0;
+        if(p.getWorld().hasStorm() || p.getWorld().isThundering())
+        {
+            I = I/2.0;
+        }
+        if(!estExposeAuCiel()) {
+            I=I/2.0;
+        }
+        return I*25;
+    }
+
+
+    //Temperature
+    public boolean hasLoreChaleur(ItemStack is)
+    {
+        if(is != null && is.hasItemMeta() && is.getItemMeta().hasLore())
+        {
+            return (is.getItemMeta().getLore().get(0).contains("Chaud"));
+
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public boolean hasLoreFroid(ItemStack is)
+    {
+        if(is != null && is.hasItemMeta() && is.getItemMeta().hasLore())
+        {
+            return (is.getItemMeta().getLore().get(0).contains("Froid"));
+
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public boolean isLeather(ItemStack is)
+    {
+        if(is!=null)
+        {
+            Material mat = is.getType();
+            return mat==Material.LEATHER_BOOTS || mat == Material.LEATHER_CHESTPLATE || mat == Material.LEATHER_LEGGINGS
+                    ||mat==Material.LEATHER_HELMET;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public double getTempProfondeur()
+    {
+        double z= p.getLocation().getBlockY();
+        double delta = z-45;
+        return delta*(-0.2);
+    }
+
+    public double getTempBiome()
+    {
+        double tmin = -20;
+        double tmax = 47;
+        double tempbrute= p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),
+                p.getLocation().getBlockZ());
+        double k = (tempbrute+0.5)/2.5;
+        double temperatureBiome = tmin+k*(tmax-tmin);
+        return temperatureBiome;
     }
 
     public double getTempTorches(EntityEquipment e)
@@ -90,48 +224,13 @@ public class PlayerSuperData {
         return tequip;
     }
 
-    public boolean hasLoreChaleur(ItemStack is)
-    {
-        if(is != null && is.hasItemMeta() && is.getItemMeta().hasLore())
-        {
-            return (is.getItemMeta().getLore().get(0).contains("Chaud"));
-
-        }
-        else
-        {
-            return false;
-        }
-    }
-    public boolean hasLoreFroid(ItemStack is)
-    {
-        if(is != null && is.hasItemMeta() && is.getItemMeta().hasLore())
-        {
-            return (is.getItemMeta().getLore().get(0).contains("Froid"));
-
-        }
-        else
-        {
-            return false;
-        }
-    }
-    public boolean isLeather(ItemStack is)
-    {
-        if(is!=null)
-        {
-            Material mat = is.getType();
-            return mat==Material.LEATHER_BOOTS || mat == Material.LEATHER_CHESTPLATE || mat == Material.LEATHER_LEGGINGS
-                    ||mat==Material.LEATHER_HELMET;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     public double getTempBottes(EntityEquipment e)
     {
         ItemStack is = e.getBoots();
-        double tequip = 2;
+        double tequip =0;
+        if(is != null) {
+            tequip += 2;
+        }
         if(isLeather(is))
         {
             tequip += 2;
@@ -151,7 +250,10 @@ public class PlayerSuperData {
     public double getTempLeggins(EntityEquipment e)
     {
         ItemStack is = e.getLeggings();
-        double tequip = 3;
+        double tequip =0;
+        if(is != null) {
+            tequip += 3;
+        }
         if(isLeather(is))
         {
             tequip += 3;
@@ -171,7 +273,10 @@ public class PlayerSuperData {
     public double getTempChestplate(EntityEquipment e)
     {
         ItemStack is = e.getChestplate();
-        double tequip = 4;
+        double tequip =0;
+        if(is != null) {
+            tequip += 4;
+        }
         if(isLeather(is))
         {
             tequip += 4;
@@ -191,7 +296,10 @@ public class PlayerSuperData {
     public double getTempHelmet(EntityEquipment e)
     {
         ItemStack is = e.getHelmet();
-        double tequip = 3;
+        double tequip =0;
+        if(is != null) {
+            tequip += 3;
+        }
         if(isLeather(is))
         {
             tequip += 3;
@@ -242,12 +350,17 @@ public class PlayerSuperData {
         {
             return +13;
         }
+        if(b.getType() == Material.TORCH)
+        {
+            return +2;
+        }
         if(b.getType() == Material.LAVA)
         {
             return +20;
         }
         return 0;
     }
+
     public double getTempObjEnvir()
     {
         double t =0;
@@ -267,64 +380,93 @@ public class PlayerSuperData {
         }
         return t;
     }
-    public boolean estExposeAuCiel()
-    {
-        int maxY = p.getWorld().getHighestBlockAt(p.getLocation()).getY();
-        int playerY = p.getLocation().getBlockY();
-        return playerY>=maxY;
-    }
-    public boolean estSousPluie()
-    {
-        return estExposeAuCiel() && (p.getWorld().hasStorm() || p.getWorld().isThundering());
-    }
-    public double getIntensiteSoleil()
-    {
-        double temps = p.getWorld().getTime();
-        if(temps>12000)
-        {
-            temps =12000;
-        }
-        double k = (double)temps/12000.0;
-        double I = (1.0-Math.cos(k*2.0*Math.PI))/2.0;
-        if(p.getWorld().hasStorm() || p.getWorld().isThundering())
-        {
-            I = I/2.0;
-        }
-        if(!estExposeAuCiel()) {
-            I=I/2.0;
-        }
-        return I*30;
-    }
-    public void Manger(Material i)
-    {
-        Menu.add(i);
-        if(i == Material.POTION) {
-            eau = Math.min(50+eau,100.0);
-        }
-        else {
-            if (Menu.size() > TailleMenu) {
-                Menu.remove(0);
-            }
-        }
-    }
 
-    public void updateVarieteAlimentaire()
-    {
-        varieteAlimentaire = calcVarieteAlimentaire();
-    }
 
-    public double calcVarieteAlimentaire()
+
+
+    //Effets
+    public void appliquerEffetTemperature()
     {
-        List<Material> alimUniques = new ArrayList<>();
-        for (Material m :Menu) {
-            if(!alimUniques.contains(m))
+        statuts[0] = "OK";
+        if(estChaud())
+        {
+           //Chaud
+            statuts[0] = "Chaud";
+            PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW,2*20,1);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2*20,1);
+            appEffet(p1);appEffet(p2);
+            if(estBouillant())
             {
-                alimUniques.add(m);
+                //Bouillant
+                statuts[0] = "Bouillant";
+
+                PotionEffect p3 = new PotionEffect(PotionEffectType.CONFUSION,30*20,2);
+                PotionEffect p4 = new PotionEffect(PotionEffectType.POISON,5*20,1);
+                PotionEffect p5 = new PotionEffect(PotionEffectType.WEAKNESS,2*20,1);
+                appEffet(p3);appEffet(p4);appEffet(p5);
             }
         }
-        return alimUniques.size()/(double)TailleMenu;
+        if(estFroid())
+        {
+            //Froid
+            statuts[0] = "Froid";
+            PotionEffect p1 = new PotionEffect(PotionEffectType.HUNGER,40*20,2);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.SLOW,2*20,1);
+            appEffet(p1);
+            appEffet(p2);
+            if(estGlacial()) {
+                //Glacial
+                statuts[0] = "Glacial";
+                PotionEffect p3 = new PotionEffect(PotionEffectType.BLINDNESS,15*20,2);
+                PotionEffect p4 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2*20,1);
+                PotionEffect p5 = new PotionEffect(PotionEffectType.POISON,5*20,1);
+                appEffet(p3);
+                appEffet(p4);
+                appEffet(p5);
+            }
+        }
+
     }
 
+    public void appliquerEffetsNutrition()
+    {
+        statuts[1] = "OK";
+        if(estCarence())
+        {
+            //Mal nourri
+            statuts[1] = "Mal Nourri";
+            PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2*20,1);
+            appEffet(p1);
+        }
+        if(estBienAlimente())
+        {
+            //Bien Nourri
+            statuts[1] = "Bien Nourri";
+            PotionEffect p1 = new PotionEffect(PotionEffectType.FAST_DIGGING,2*20,1);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.INCREASE_DAMAGE,2*20,1);
+            appEffet(p1);appEffet(p2);
+        }
+    }
+
+    public void appliquerEffetsSoif()
+    {
+        statuts[3]="OK";
+        if(aSoif())
+        {
+            statuts[3]="Assoifé";
+            PotionEffect p1 = new PotionEffect(PotionEffectType.WEAKNESS,2*20,1);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.BLINDNESS,15*20,1);
+            appEffet(p1);appEffet(p2);
+        }
+        if(eau<1)
+        {
+            statuts[3]="Mourrant";
+            PotionEffect p1 = new PotionEffect(PotionEffectType.HARM,2*20,1);
+            if(!p.hasPotionEffect(PotionEffectType.HARM)) {
+                p1.apply(p);
+            }
+        }
+    }
 
     public void appliquerEffetsPluie(Random r)
     {
@@ -345,74 +487,96 @@ public class PlayerSuperData {
 
             }
             else {
-                PotionEffect tox = new PotionEffect(PotionEffectType.CONFUSION, 10 * 20, 3);
-                PotionEffect acide = new PotionEffect(PotionEffectType.POISON, 1 * 20, 3);
-                tox.apply(p);
-                acide.apply(p);
+                PotionEffect tox = new PotionEffect(PotionEffectType.CONFUSION, 30 * 20, 3);
+                PotionEffect acide = new PotionEffect(PotionEffectType.POISON, 4 * 20, 3);
+                appEffet(tox);appEffet(acide);
             }
         }
     }
 
-    public void appliquerEffetTemperature(double Temperature)
+
+
+    //Utils
+    public boolean estGlacial()
     {
-        if(Temperature>45)
+        return (temperature<-10);
+    }
+    public boolean estFroid()
+    {
+        return (temperature<5);
+    }
+    public boolean estChaud()
+    {
+        return temperature>29;
+    }
+    public boolean estBouillant()
+    {
+        return temperature>40;
+    }
+    public boolean estCarence()
+    {
+        return varieteAlimentaire<30;
+    }
+    public boolean estBienAlimente()
+    {
+        return varieteAlimentaire>70;
+    }
+
+    public boolean aSoif()
+    {
+        return eau<15;
+    }
+
+    public void appEffet(PotionEffect e)
+    {
+        PotionEffectType t= e.getType();
+        if(p.hasPotionEffect(t))
         {
-            //Bouillant
-            PotionEffect p1 = new PotionEffect(PotionEffectType.CONFUSION,2,1);
-            PotionEffect p2 = new PotionEffect(PotionEffectType.HARM,1,1);
-            p1.apply(p);
-            p2.apply(p);
+            PotionEffect present = p.getPotionEffect(t);
+            if(present.getDuration()<10) {
+                p.removePotionEffect(t);
+                e.apply(p);
+            }
         }
-        if(Temperature > 30)
+        else
         {
-           //Chaud
-            PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW,2,1);
-            PotionEffect p2 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2,1);
-            p1.apply(p);
-            p2.apply(p);
-        }
-        if(Temperature<5)
-        {
-            //Froid
-            PotionEffect p1 = new PotionEffect(PotionEffectType.HUNGER,2,2);
-            PotionEffect p2 = new PotionEffect(PotionEffectType.SLOW,2,1);
-            p1.apply(p);
-            p2.apply(p);
-        }
-        if(Temperature<-15) {
-            //Glacial
-            PotionEffect p1 = new PotionEffect(PotionEffectType.BLINDNESS,2,2);
-            PotionEffect p2 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2,1);
-            PotionEffect p3 = new PotionEffect(PotionEffectType.HARM,1,1);
-            p1.apply(p);
-            p2.apply(p);
-            p3.apply(p);
+            e.apply(p);
         }
     }
 
-    public void appliquerEffetsNutrition()
+    public boolean estExposeAuCiel()
     {
-        if(varieteAlimentaire<30)
+        int maxY = p.getWorld().getHighestBlockAt(p.getLocation()).getY();
+        int playerY = p.getLocation().getBlockY();
+        if(playerY>=maxY) {
+            statuts[2] = "Exposé";
+            return true;
+        }else
         {
-            //Mal nourri
-            PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2,1);
-            PotionEffect p2 = new PotionEffect(PotionEffectType.WEAKNESS,2,1);
-            p1.apply(p);
-            p2.apply(p);
-        }
-        if(varieteAlimentaire>70)
-        {
-            //Bien Nourri
-            PotionEffect p1 = new PotionEffect(PotionEffectType.FAST_DIGGING,2,1);
-            PotionEffect p2 = new PotionEffect(PotionEffectType.INCREASE_DAMAGE,2,1);
-            p1.apply(p);
-            p2.apply(p);
+            statuts[2] = "Abrité";
+            return false;
         }
     }
 
-    public void updateSoif()
+    public boolean estSousPluie()
     {
-        double delta = Math.max(0.025,getTemperature()*0.025/9);
-        eau = Math.max(0,eau - delta);
+        return estExposeAuCiel() && (p.getWorld().hasStorm() || p.getWorld().isThundering());
     }
+
+    public void Manger(Material i)
+    {
+        Menu.add(i);
+        if(i == Material.POTION) {
+            eau = Math.min(50+eau,100.0);
+        }
+        else {
+            if (Menu.size() > TailleMenu) {
+                Menu.remove(0);
+            }
+        }
+    }
+
+
+
+
 }
