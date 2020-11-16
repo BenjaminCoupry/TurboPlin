@@ -1,9 +1,6 @@
 package Principal;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Effect;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -103,12 +100,12 @@ public class Main extends JavaPlugin implements Listener {
         Scoreboard sb = manager.getNewScoreboard();
         Objective obj = sb.registerNewObjective("stats","dummy","Statistiques");
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-        Score variteAlim = obj.getScore("Equilibre Alimentaire :");
-        variteAlim.setScore(1);
-        Score soif = obj.getScore("Eau :");
-        soif.setScore(1);
-        Score temp = obj.getScore("Temperature :");
-        temp.setScore(1);
+        Score variteAlim = obj.getScore(ChatColor.GOLD+"Equilibre Alimentaire :");
+        variteAlim.setScore(100);
+        Score soif = obj.getScore(ChatColor.BLUE+"Eau :");
+        soif.setScore(100);
+        Score temp = obj.getScore(ChatColor.RED+"Temperature :");
+        temp.setScore(20);
         p.setScoreboard(sb);
     }
 
@@ -228,38 +225,20 @@ public class Main extends JavaPlugin implements Listener {
     {
         PlayerSuperData sd = superdatas.get(p.getName());
         sd.updateSoif();
-        if(sd.estSousPluie()) {
-            ItemStack casque = p.getEquipment().getHelmet();
-            if(casque != null && casque.getType() == Material.CHAINMAIL_HELMET && casque.getItemMeta().hasLore()) {
-
-                if(r.nextDouble()<1.0/15.0) {
-                    Damageable c = ((Damageable) casque.getItemMeta());
-                    int D_next = c.getDamage() + 1;
-                    c.setDamage(D_next);
-                    casque.setItemMeta((ItemMeta) c);
-                    if(Material.CHAINMAIL_HELMET.getMaxDurability()<D_next)
-                    {
-                        p.getEquipment().setHelmet(null);
-                    }
-                }
-
-            }
-            else {
-                PotionEffect tox = new PotionEffect(PotionEffectType.CONFUSION, 10 * 20, 3);
-                PotionEffect acide = new PotionEffect(PotionEffectType.POISON, 1 * 20, 3);
-                tox.apply(p);
-                acide.apply(p);
-            }
-        }
+        sd.updateTemperature();
+        sd.appliquerEffetTemperature(sd.getTemperature());
+        sd.appliquerEffetsPluie(r);
+        sd.updateVarieteAlimentaire();
+        sd.appliquerEffetsNutrition();
         scoreboardUpdate(sd);
     }
     private void scoreboardUpdate(PlayerSuperData ps)
     {
         Player p = ps.p;
 
-        Score varieteAlim = p.getScoreboard().getObjective("stats").getScore("Equilibre Alimentaire :");
-        Score soif = p.getScoreboard().getObjective("stats").getScore("Eau :");
-        Score temp = p.getScoreboard().getObjective("stats").getScore("Temperature :");
+        Score varieteAlim = p.getScoreboard().getObjective("stats").getScore(ChatColor.GOLD+ "Equilibre Alimentaire :");
+        Score soif = p.getScoreboard().getObjective("stats").getScore(ChatColor.BLUE+"Eau :");
+        Score temp = p.getScoreboard().getObjective("stats").getScore(ChatColor.RED+"Temperature :");
 
 
 

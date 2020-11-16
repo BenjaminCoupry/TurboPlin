@@ -1,19 +1,40 @@
 package Principal;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.WeatherType;
+import org.bukkit.block.Block;
+import org.bukkit.block.Campfire;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class PlayerSuperData {
-    static private int TailleMenu = 5;
+    static private int TailleMenu = 7;
     Player p;
+
+    public double getVarieteAlimentaire() {
+        return varieteAlimentaire;
+    }
+
+    double varieteAlimentaire;
+    public double getTemperature() {
+        return temperature;
+    }
+
+    double temperature;
+
+
     List<Material> Menu;
 
     public double getEau() {
@@ -25,15 +46,23 @@ public class PlayerSuperData {
     {
         this.p = p;
         Menu = new ArrayList<>();
+        temperature =20;
         eau = 100.0;
+        varieteAlimentaire = 0;
     }
-    public double getTemperature()
+    public double calcTemperature()
     {
         double temperatureBiome = (100.0*(p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),p.getLocation().getBlockZ())-0.6))-10.0;
         double tempSol = getIntensiteSoleil();
         double tempProfondeur = 15-(25*(p.getLocation().getBlockY()-45)/205.0);
         double tequip = getTempEquipement();
-        return temperatureBiome+tempSol+tempProfondeur+tequip;
+        double envir = getTempObjEnvir();
+        return temperatureBiome+tempSol+tempProfondeur+tequip+envir;
+    }
+
+    public void updateTemperature()
+    {
+        temperature = calcTemperature();
     }
     public double getTempEquipement()
     {
@@ -179,6 +208,65 @@ public class PlayerSuperData {
         return tequip;
     }
 
+    public double getTempBloc(Block b)
+    {
+        if(b.getType() == Material.SNOW)
+        {
+            return -1;
+        }
+        if(b.getType() == Material.SNOW_BLOCK)
+        {
+            return -2;
+        }
+        if(b.getType() == Material.ICE)
+        {
+            return -3;
+        }
+        if(b.getType() == Material.PACKED_ICE)
+        {
+            return -4;
+        }
+        if(b.getType() == Material.FROSTED_ICE)
+        {
+            return -4;
+        }
+        if(b.getType() == Material.BLUE_ICE)
+        {
+            return -5;
+        }
+        if(b.getType() == Material.CAMPFIRE)
+        {
+            return +10;
+        }
+        if(b.getType() == Material.FIRE)
+        {
+            return +13;
+        }
+        if(b.getType() == Material.LAVA)
+        {
+            return +20;
+        }
+        return 0;
+    }
+    public double getTempObjEnvir()
+    {
+        double t =0;
+        int R = 2;
+        Location l = p.getLocation();
+        for(int i = -R;i<=R;i++)
+        {
+            for(int j = -R;j<=R;j++)
+            {
+                for(int k = -R/2;k<=R/2;k++)
+                {
+                    Location l0 = new Location(p.getWorld(),l.getX()+i,l.getY()+k,l.getZ()+j);
+                    Block b = p.getWorld().getBlockAt(l0);
+                    t+= getTempBloc(b);
+                }
+            }
+        }
+        return t;
+    }
     public boolean estExposeAuCiel()
     {
         int maxY = p.getWorld().getHighestBlockAt(p.getLocation()).getY();
@@ -220,7 +308,12 @@ public class PlayerSuperData {
         }
     }
 
-    public double getVarieteAlimentaire()
+    public void updateVarieteAlimentaire()
+    {
+        varieteAlimentaire = calcVarieteAlimentaire();
+    }
+
+    public double calcVarieteAlimentaire()
     {
         List<Material> alimUniques = new ArrayList<>();
         for (Material m :Menu) {
@@ -230,6 +323,91 @@ public class PlayerSuperData {
             }
         }
         return alimUniques.size()/(double)TailleMenu;
+    }
+
+
+    public void appliquerEffetsPluie(Random r)
+    {
+        if(estSousPluie()) {
+            ItemStack casque = p.getEquipment().getHelmet();
+            if(casque != null && casque.getType() == Material.CHAINMAIL_HELMET && casque.getItemMeta().hasLore()) {
+
+                if(r.nextDouble()<1.0/15.0) {
+                    Damageable c = ((Damageable) casque.getItemMeta());
+                    int D_next = c.getDamage() + 1;
+                    c.setDamage(D_next);
+                    casque.setItemMeta((ItemMeta) c);
+                    if(Material.CHAINMAIL_HELMET.getMaxDurability()<D_next)
+                    {
+                        p.getEquipment().setHelmet(null);
+                    }
+                }
+
+            }
+            else {
+                PotionEffect tox = new PotionEffect(PotionEffectType.CONFUSION, 10 * 20, 3);
+                PotionEffect acide = new PotionEffect(PotionEffectType.POISON, 1 * 20, 3);
+                tox.apply(p);
+                acide.apply(p);
+            }
+        }
+    }
+
+    public void appliquerEffetTemperature(double Temperature)
+    {
+        if(Temperature>45)
+        {
+            //Bouillant
+            PotionEffect p1 = new PotionEffect(PotionEffectType.CONFUSION,2,1);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.HARM,1,1);
+            p1.apply(p);
+            p2.apply(p);
+        }
+        if(Temperature > 30)
+        {
+           //Chaud
+            PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW,2,1);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2,1);
+            p1.apply(p);
+            p2.apply(p);
+        }
+        if(Temperature<5)
+        {
+            //Froid
+            PotionEffect p1 = new PotionEffect(PotionEffectType.HUNGER,2,2);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.SLOW,2,1);
+            p1.apply(p);
+            p2.apply(p);
+        }
+        if(Temperature<-15) {
+            //Glacial
+            PotionEffect p1 = new PotionEffect(PotionEffectType.BLINDNESS,2,2);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2,1);
+            PotionEffect p3 = new PotionEffect(PotionEffectType.HARM,1,1);
+            p1.apply(p);
+            p2.apply(p);
+            p3.apply(p);
+        }
+    }
+
+    public void appliquerEffetsNutrition()
+    {
+        if(varieteAlimentaire<30)
+        {
+            //Mal nourri
+            PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2,1);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.WEAKNESS,2,1);
+            p1.apply(p);
+            p2.apply(p);
+        }
+        if(varieteAlimentaire>70)
+        {
+            //Bien Nourri
+            PotionEffect p1 = new PotionEffect(PotionEffectType.FAST_DIGGING,2,1);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.INCREASE_DAMAGE,2,1);
+            p1.apply(p);
+            p2.apply(p);
+        }
     }
 
     public void updateSoif()
