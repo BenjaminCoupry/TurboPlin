@@ -5,6 +5,7 @@ import org.bukkit.WeatherType;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -31,25 +32,153 @@ public class PlayerSuperData {
         double temperatureBiome = (100.0*(p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),p.getLocation().getBlockZ())-0.6))-10.0;
         double tempSol = getIntensiteSoleil();
         double tempProfondeur = 15-(25*(p.getLocation().getBlockY()-45)/205.0);
+        double tequip = getTempEquipement();
+        return temperatureBiome+tempSol+tempProfondeur+tequip;
+    }
+    public double getTempEquipement()
+    {
+        EntityEquipment e= p.getEquipment();
+
+        double tequip = getTempTorches(e);
+        tequip += getTempBottes(e);
+        tequip += getTempLeggins(e);
+        tequip += getTempChestplate(e);
+        tequip += getTempHelmet(e);
+        return tequip;
+    }
+
+    public double getTempTorches(EntityEquipment e)
+    {
         double tequip = 0;
-        if(p.getEquipment().getBoots() != null && p.getEquipment().getBoots().getType() == Material.LEATHER_BOOTS)
-        {
-            tequip += 3;
-        }
-        if(p.getEquipment().getLeggings()!= null && p.getEquipment().getLeggings().getType() == Material.LEATHER_LEGGINGS)
-        {
-            tequip += 6;
-        }
-        if(p.getEquipment().getChestplate()!= null && p.getEquipment().getChestplate().getType() == Material.LEATHER_CHESTPLATE)
-        {
-            tequip += 10;
-        }
-        if(p.getEquipment().getHelmet() != null && p.getEquipment().getHelmet().getType() == Material.LEATHER_HELMET)
+        if(e.getItemInMainHand() != null && e.getItemInMainHand().getType() == Material.TORCH)
         {
             tequip += 5;
         }
-        return temperatureBiome+tempSol+tempProfondeur+tequip;
+        if(e.getItemInOffHand() != null && e.getItemInOffHand().getType() == Material.TORCH)
+        {
+            tequip += 5;
+        }
+        return tequip;
     }
+
+    public boolean hasLoreChaleur(ItemStack is)
+    {
+        if(is != null && is.hasItemMeta() && is.getItemMeta().hasLore())
+        {
+            return (is.getItemMeta().getLore().get(0).contains("Chaud"));
+
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public boolean hasLoreFroid(ItemStack is)
+    {
+        if(is != null && is.hasItemMeta() && is.getItemMeta().hasLore())
+        {
+            return (is.getItemMeta().getLore().get(0).contains("Froid"));
+
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public boolean isLeather(ItemStack is)
+    {
+        if(is!=null)
+        {
+            Material mat = is.getType();
+            return mat==Material.LEATHER_BOOTS || mat == Material.LEATHER_CHESTPLATE || mat == Material.LEATHER_LEGGINGS
+                    ||mat==Material.LEATHER_HELMET;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public double getTempBottes(EntityEquipment e)
+    {
+        ItemStack is = e.getBoots();
+        double tequip = 2;
+        if(isLeather(is))
+        {
+            tequip += 2;
+        }
+        if(hasLoreFroid(is))
+        {
+            tequip -= 4;
+        }
+        if(hasLoreChaleur(is))
+        {
+            tequip += 4;
+        }
+
+        return tequip;
+    }
+
+    public double getTempLeggins(EntityEquipment e)
+    {
+        ItemStack is = e.getLeggings();
+        double tequip = 3;
+        if(isLeather(is))
+        {
+            tequip += 3;
+        }
+        if(hasLoreFroid(is))
+        {
+            tequip -= 6;
+        }
+        if(hasLoreChaleur(is))
+        {
+            tequip += 6;
+        }
+
+        return tequip;
+    }
+
+    public double getTempChestplate(EntityEquipment e)
+    {
+        ItemStack is = e.getChestplate();
+        double tequip = 4;
+        if(isLeather(is))
+        {
+            tequip += 4;
+        }
+        if(hasLoreFroid(is))
+        {
+            tequip -= 8;
+        }
+        if(hasLoreChaleur(is))
+        {
+            tequip += 8;
+        }
+
+        return tequip;
+    }
+
+    public double getTempHelmet(EntityEquipment e)
+    {
+        ItemStack is = e.getHelmet();
+        double tequip = 3;
+        if(isLeather(is))
+        {
+            tequip += 3;
+        }
+        if(hasLoreFroid(is))
+        {
+            tequip -= 6;
+        }
+        if(hasLoreChaleur(is))
+        {
+            tequip += 6;
+        }
+
+        return tequip;
+    }
+
     public boolean estExposeAuCiel()
     {
         int maxY = p.getWorld().getHighestBlockAt(p.getLocation()).getY();

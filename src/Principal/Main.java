@@ -199,7 +199,7 @@ public class Main extends JavaPlugin implements Listener {
         if(p.getCustomName().contains( "!NUKE!") && p.isGlowing()) {
             this.getServer().getLogger().info("NUKE HIT");
             callCommande("weather thunder 20000");
-            callCommande("time set night");
+            p.getWorld().setTime(12540);
             callCommande("say la pluie toxique va tomber...");
             p.getWorld().strikeLightning(p.getLocation());
             p.getWorld().createExplosion(event.getHitBlock().getLocation(),40,true,true);
