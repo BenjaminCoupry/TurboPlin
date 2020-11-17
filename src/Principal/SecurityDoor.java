@@ -6,6 +6,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.Door;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -16,7 +17,8 @@ public class SecurityDoor {
     //Se tenir sur le meme bloc que la porte
     //faire clique droit avec la pepite sur le panneau
     //La porte est desormais liee a la pepite
-    static void actionSec(ItemStack it, Block b, Player p)
+    //Click gauche avec la clef pour demonter la porte
+    static void actionSec(ItemStack it, Block b, Player p, Action act)
     {
         if(it.getType() == Material.GOLD_NUGGET)
         {
@@ -46,11 +48,25 @@ public class SecurityDoor {
                             String actuel = s.getLine(0);
                             if(actuel.contains(hash)) {
                                 Door d = (Door) (b.getState().getBlockData());
-                                if (!d.isPowered()) {
-                                    boolean state = d.isOpen();
-                                    boolean nextState = !state;
-                                    d.setOpen(nextState);
-                                    b.setBlockData(d);
+                                if(act == Action.RIGHT_CLICK_BLOCK) {
+                                    if (!d.isPowered()) {
+                                        boolean state = d.isOpen();
+                                        boolean nextState = !state;
+                                        d.setOpen(nextState);
+                                        b.setBlockData(d);
+                                    }
+                                }
+                                else if(act == Action.LEFT_CLICK_BLOCK)
+                                {
+                                    b.setType(Material.AIR);
+                                    if(b.getRelative(0,1,0).getType() == Material.IRON_DOOR)
+                                    {
+                                        b.getRelative(0,1,0).setType(Material.AIR);
+                                    }
+                                    if(b.getRelative(0,-1,0).getType() == Material.IRON_DOOR)
+                                    {
+                                        b.getRelative(0,-1,0).setType(Material.AIR);
+                                    }
                                 }
                             }
                         }

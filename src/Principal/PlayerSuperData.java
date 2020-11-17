@@ -26,8 +26,11 @@ public class PlayerSuperData {
         this.p = p;
     }
 
-    static private double regainEnergie = 0.02;
+    static private double inertieThermique = 0.97;
+    static private double regainEnergie = 0.5;
+    static private double regainEnergieManger = 20;
     static private int TailleMenu = 7;
+    static private int RayonTemperature = 2;
     Player p;
     String[] statuts;
     double varieteAlimentaire;
@@ -66,7 +69,8 @@ public class PlayerSuperData {
         double tempProfondeur = getTempProfondeur();
         double tequip = getTempEquipement();
         double envir = getTempObjEnvir();
-        return temperatureBiome+tempSol+tempProfondeur+tequip+envir;
+        double course = getTempCourrir();
+        return temperatureBiome+tempSol+tempProfondeur+tequip+envir+course;
     }
 
     public double calcVarieteAlimentaire()
@@ -85,7 +89,7 @@ public class PlayerSuperData {
     //Updates
     public void updateTemperature()
     {
-        temperature = calcTemperature();
+        temperature = (inertieThermique*temperature + (1.0-inertieThermique)*calcTemperature());
     }
 
     public void updateVarieteAlimentaire()
@@ -104,7 +108,7 @@ public class PlayerSuperData {
         double ex = p.getExhaustion();
         double delta = Math.max(0,ex-lastExhaustion);
         lastExhaustion = ex;
-        double deltaReel = 3.0*delta -regainEnergie;
+        double deltaReel = 10.0*delta -regainEnergie;
         fatigue = Math.min(Math.max(0,fatigue+deltaReel),100.0);
     }
 
@@ -126,6 +130,10 @@ public class PlayerSuperData {
         return tequip;
     }
 
+    public void setFatigue(double fatigue) {
+        this.fatigue = fatigue;
+    }
+
     public double getEau() {
         return eau;
     }
@@ -144,10 +152,10 @@ public class PlayerSuperData {
 
     public String getStatusString()
     {
-        return "Temperature : "+statuts[0]+'\n'
-                +"Nourriture : "+statuts[1]+'\n'
+        return "Temperature : ("+temperature+") "+statuts[0]+'\n'
+                +"Nourriture : ("+varieteAlimentaire+") "+statuts[1]+'\n'
                 +"Abri : "+statuts[2]+'\n'
-                +"Eau : "+statuts[3];
+                +"Eau : ("+eau+") "+statuts[3];
     }
 
     public double getIntensiteSoleil()
@@ -228,6 +236,15 @@ public class PlayerSuperData {
         double k = (tempbrute+0.5)/2.5;
         double temperatureBiome = tmin+k*(tmax-tmin);
         return temperatureBiome;
+    }
+
+    public double getTempCourrir()
+    {
+        if(p.isSprinting())
+        {
+            return 5;
+        }
+        return 0;
     }
 
     public double getTempTorches(EntityEquipment e)
@@ -388,7 +405,7 @@ public class PlayerSuperData {
     public double getTempObjEnvir()
     {
         double t =0;
-        int R = 2;
+        int R = RayonTemperature;
         Location l = p.getLocation();
         for(int i = -R;i<=R;i++)
         {
@@ -416,8 +433,8 @@ public class PlayerSuperData {
         {
            //Chaud
             statuts[0] = "Chaud";
-            PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW,2*20,1);
-            PotionEffect p2 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2*20,1);
+            PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW,2*20,0);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2*20,0);
             appEffet(p1);appEffet(p2);
             if(estBouillant())
             {
@@ -434,7 +451,7 @@ public class PlayerSuperData {
         {
             //Froid
             statuts[0] = "Froid";
-            PotionEffect p1 = new PotionEffect(PotionEffectType.HUNGER,40*20,2);
+            PotionEffect p1 = new PotionEffect(PotionEffectType.HUNGER,40*20,0);
             PotionEffect p2 = new PotionEffect(PotionEffectType.SLOW,2*20,1);
             appEffet(p1);
             appEffet(p2);
@@ -459,7 +476,7 @@ public class PlayerSuperData {
         {
             //Mal nourri
             statuts[1] = "Mal Nourri";
-            PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2*20,1);
+            PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW_DIGGING,2*20,0);
             appEffet(p1);
         }
         if(estBienAlimente())
@@ -478,8 +495,8 @@ public class PlayerSuperData {
         if(aSoif())
         {
             statuts[3]="Assoifé";
-            PotionEffect p1 = new PotionEffect(PotionEffectType.WEAKNESS,2*20,1);
-            PotionEffect p2 = new PotionEffect(PotionEffectType.BLINDNESS,15*20,1);
+            PotionEffect p1 = new PotionEffect(PotionEffectType.WEAKNESS,2*20,0);
+            PotionEffect p2 = new PotionEffect(PotionEffectType.BLINDNESS,15*20,0);
             appEffet(p1);appEffet(p2);
         }
         if(eau<1)
@@ -496,6 +513,11 @@ public class PlayerSuperData {
         {
             PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW,4*20,1);
             appEffet(p1);
+            if(estEpuise())
+            {
+                PotionEffect p2 = new PotionEffect(PotionEffectType.BLINDNESS,13*20,1);
+                appEffet(p2);
+            }
         }
     }
 
@@ -528,6 +550,10 @@ public class PlayerSuperData {
 
 
     //Utils
+    public boolean estEpuise()
+    {
+        return fatigue>85;
+    }
     public boolean estFatigue()
     {
         return fatigue>60;
@@ -600,6 +626,8 @@ public class PlayerSuperData {
 
     public void Manger(Material i)
     {
+
+        fatigue = Math.max(0,fatigue-30);
         Menu.add(i);
         if(i == Material.POTION) {
             eau = Math.min(50+eau,100.0);

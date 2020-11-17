@@ -91,10 +91,15 @@ public class BarSet {
     }
     public BarColor colorFromFatigue(PlayerSuperData ps)
     {
-        if(ps.estFatigue())
+        if(ps.estEpuise())
         {
             return BarColor.RED;
         }
+        if(ps.estFatigue())
+        {
+            return BarColor.YELLOW;
+        }
+
         return BarColor.GREEN;
     }
 

@@ -2,6 +2,7 @@ package Principal;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.type.Stairs;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -13,10 +14,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.EventHandler;
@@ -148,11 +146,28 @@ public class Main extends JavaPlugin implements Listener {
 
 
     //Events
+    @EventHandler
+    public void onPlayerSaut(PlayerMoveEvent event)
+    {
+        if(event.getPlayer().getGameMode()!=GameMode.CREATIVE && !event.getPlayer().hasPotionEffect(PotionEffectType.LEVITATION)) {
+            if (event.getTo().getY() > event.getFrom().getY()) {
+                if (event.getPlayer().getWorld().getBlockAt(event.getPlayer().getLocation().subtract(0, 1, 0)).getType() == Material.AIR) {
+                    PlayerSuperData ps = superdatas.get(event.getPlayer().getName());
+                    ps.setFatigue(Math.min(100, ps.getFatigue() + 2));
+                }
+                if (event.getPlayer().getWorld().getBlockAt(event.getPlayer().getLocation().subtract(0, 1, 0))
+                        .getState().getBlockData() instanceof Stairs) {
+                    PlayerSuperData ps = superdatas.get(event.getPlayer().getName());
+                    ps.setFatigue(Math.min(100, ps.getFatigue() + 1));
+                }
+            }
+        }
+    }
 
     @EventHandler
     public void onPlayerClick(PlayerInteractEvent event)
     {
-        if(event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+        if(event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
             Player p = event.getPlayer();
             long cd = superdatas.get(p.getName()).cooldown;
             if(System.currentTimeMillis()-cd>300) {
@@ -161,7 +176,7 @@ public class Main extends JavaPlugin implements Listener {
                     Block b = event.getClickedBlock();
                     if (p.getInventory().getItemInMainHand() != null) {
                         ItemStack it = p.getInventory().getItemInMainHand();
-                        SecurityDoor.actionSec(it, b,p);
+                        SecurityDoor.actionSec(it, b,p,event.getAction());
                     }
                 }
             }
@@ -206,10 +221,21 @@ public class Main extends JavaPlugin implements Listener {
         {
             if(b.getType() != Material.TNT)
             {
-                event.setCancelled(true);
-                callCommande("tell "+p.getName()+" Vous êtes en faction adverse et ne" +
-                        " pouvez pas placer de block ici");
+                if(b.getType() != Material.FIRE) {
+                    event.setCancelled(true);
+                    callCommande("tell " + p.getName() + " Vous êtes en faction adverse et ne" +
+                            " pouvez pas placer de block ici");
+                }
             }
+        }
+    }
+
+    @EventHandler
+    public void onDormir(PlayerBedEnterEvent event)
+    {
+        Player p = event.getPlayer();
+        if(event.getBedEnterResult() == PlayerBedEnterEvent.BedEnterResult.OK) {
+            superdatas.get(p.getName()).setFatigue(0);
         }
     }
 
@@ -220,6 +246,7 @@ public class Main extends JavaPlugin implements Listener {
         PlayerSuperData psd = superdatas.get(event.getPlayer().getName());
         psd.Manger(mange);
     }
+
 
     @EventHandler
     public void onEntityDamagedByEntity(EntityDamageByEntityEvent event) {
@@ -237,9 +264,31 @@ public class Main extends JavaPlugin implements Listener {
                 if (p.getHealth() - event.getDamage() <= 0.5) {
                     //Joueur Meurt
                     Zombie zp = (Zombie)z.getWorld().spawnEntity(p.getLocation(),EntityType.ZOMBIE);
-                    zp.getEquipment().setArmorContents(p.getEquipment().getArmorContents().clone());
+                    if(p.getEquipment().getChestplate()!= null)
+                    {
+                        zp.getEquipment().setChestplate(p.getEquipment().getChestplate().clone());
+                    }
+                    if(p.getEquipment().getLeggings()!= null)
+                    {
+                        zp.getEquipment().setLeggings(p.getEquipment().getLeggings().clone());
+                    }
+                    if(p.getEquipment().getBoots()!= null)
+                    {
+                        zp.getEquipment().setBoots(p.getEquipment().getBoots().clone());
+                    }
+                    if(p.getEquipment().getHelmet()!= null)
+                    {
+                        zp.getEquipment().setHelmet(p.getEquipment().getHelmet().clone());
+                    }
+                    if(p.getEquipment().getItemInMainHand()!= null)
+                    {
+                        zp.getEquipment().setItemInMainHand(p.getEquipment().getItemInMainHand().clone());
+                    }
+
                     for(ItemStack is : p.getInventory()) {
-                        p.getWorld().dropItemNaturally(p.getLocation(),is);
+                        if(is!=null) {
+                            p.getWorld().dropItemNaturally(p.getLocation(), is);
+                        }
                     }
                     zp.setCustomName("(Z)"+p.getName());
                     zp.setCustomNameVisible(true);
@@ -357,12 +406,12 @@ public class Main extends JavaPlugin implements Listener {
             UI.remove(p.getName());
         }
         UI.put(p.getName(), new BarSet(this, p));
-        setupAffStatsScoreBoard(p);
+        //setupAffStatsScoreBoard(p);
     }
     public void updateAffStats(PlayerSuperData ps)
     {
         UI.get(ps.p.getName()).update(ps);
-        updateAffStatsScoreBoard(ps);
+        //updateAffStatsScoreBoard(ps);
     }
 
     public void setupAffStatsScoreBoard(Player p)

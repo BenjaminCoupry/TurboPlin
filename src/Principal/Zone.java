@@ -96,7 +96,7 @@ public class Zone {
         if(!pasdeFrontiere.contains(b.getType()))
         {
             if(!b.isPassable()) {
-                if (!(b.getState() instanceof Bisected)) {
+                if (!(b.getState().getBlockData() instanceof Bisected)) {
                     if (!((b.getState().getBlockData()) instanceof Leaves)) {
                         BoundingBox bb = b.getBoundingBox();
                         if (bb.getVolume() == 1) {

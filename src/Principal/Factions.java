@@ -132,12 +132,15 @@ public class Factions {
     {
         for(ItemStack mh : p.getInventory().getContents()) {
             if (mh != null) {
+                Main.callCommande("say "+mh.toString());
                 if (mh.hasItemMeta()) {
                     ItemMeta im = mh.getItemMeta();
                     if (im.hasLore()) {
                         List<String> lore = im.getLore();
                         if (lore.size() > 0) {
-                            return lore.get(0).contains(faction);
+                            if(lore.get(0).contains(faction)) {
+                                return true;
+                            }
                         }
                     }
                 }
