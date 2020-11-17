@@ -33,9 +33,15 @@ public class Bar {
     {
         bar = Bukkit.createBossBar(ChatColor.DARK_GREEN + "Variete Alimentaire", BarColor.GREEN, BarStyle.SOLID);
         bar.setVisible(true);
-    }public void createTempBar()
+    }
+    public void createTempBar()
     {
         bar = Bukkit.createBossBar(ChatColor.RED + "Temperature", BarColor.RED, BarStyle.SOLID);
+        bar.setVisible(true);
+    }
+    public void createFatigueBar()
+    {
+        bar = Bukkit.createBossBar(ChatColor.YELLOW + "Fatigue", BarColor.RED, BarStyle.SOLID);
         bar.setVisible(true);
     }
 

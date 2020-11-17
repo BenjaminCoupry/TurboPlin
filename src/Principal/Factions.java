@@ -130,18 +130,15 @@ public class Factions {
 
     public boolean testerPossesionMarqueurFaction(Player p, String faction)
     {
-        ItemStack mh = p.getEquipment().getItemInMainHand();
-        if(mh != null)
-        {
-            if(mh.hasItemMeta())
-            {
-                ItemMeta im = mh.getItemMeta();
-                if(im.hasLore())
-                {
-                    List<String> lore = im.getLore();
-                    if(lore.size()>0)
-                    {
-                        return lore.get(0).contains(faction);
+        for(ItemStack mh : p.getInventory().getContents()) {
+            if (mh != null) {
+                if (mh.hasItemMeta()) {
+                    ItemMeta im = mh.getItemMeta();
+                    if (im.hasLore()) {
+                        List<String> lore = im.getLore();
+                        if (lore.size() > 0) {
+                            return lore.get(0).contains(faction);
+                        }
                     }
                 }
             }

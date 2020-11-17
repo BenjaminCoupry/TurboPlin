@@ -13,6 +13,7 @@ public class BarSet {
     Bar barTemp;
     Bar barSoif;
     Bar barAlim;
+    Bar barFatigue;
 
     public BarSet(Main plugin, Player p) {
         for (Iterator<KeyedBossBar> it = Bukkit.getBossBars(); it.hasNext(); ) {
@@ -26,18 +27,22 @@ public class BarSet {
         barTemp = new Bar(plugin);
         barSoif = new Bar(plugin);
         barAlim = new Bar(plugin);
+        barFatigue = new Bar(plugin);
         barTemp.createTempBar();
         barSoif.createWaterBar();
         barAlim.createAlimBar();
+        barFatigue.createFatigueBar();
         barTemp.addPlayer(p);
         barSoif.addPlayer(p);
         barAlim.addPlayer(p);
+        barFatigue.addPlayer(p);
     }
     public void update(PlayerSuperData ps)
     {
         barAlim.updateValue(ps.getVarieteAlimentaire());
         barSoif.updateValue(ps.getEau());
         barTemp.updateValue(ps.getTemperature()+50);
+        barFatigue.updateValue(ps.getFatigue());
         barTemp.getBar().setColor(colorFromTemp(ps));
         barSoif.getBar().setColor(colorFromSoif(ps));
         barAlim.getBar().setColor(colorFromEquilibreAlim(ps));
@@ -89,6 +94,7 @@ public class BarSet {
         barTemp.del();
         barAlim.del();
         barSoif.del();
+        barFatigue.del();
     }
     public void del(Player p)
     {

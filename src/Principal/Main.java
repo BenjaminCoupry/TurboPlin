@@ -338,7 +338,7 @@ public class Main extends JavaPlugin implements Listener {
         sd.updateSoif();
         sd.updateTemperature();
         sd.updateVarieteAlimentaire();
-
+        sd.updateFatigue();
         if(p.getGameMode() != GameMode.CREATIVE) {
             sd.appliquerEffetTemperature();
             sd.appliquerEffetsPluie(r);
@@ -356,15 +356,15 @@ public class Main extends JavaPlugin implements Listener {
             UI.remove(p.getName());
         }
         UI.put(p.getName(), new BarSet(this, p));
-        _setupAffStats(p);
+        setupAffStatsScoreBoard(p);
     }
     public void updateAffStats(PlayerSuperData ps)
     {
         UI.get(ps.p.getName()).update(ps);
-        _updateAffStats(ps);
+        updateAffStatsScoreBoard(ps);
     }
 
-    public void _setupAffStats(Player p)
+    public void setupAffStatsScoreBoard(Player p)
     {
         ScoreboardManager manager = Bukkit.getScoreboardManager();
         Scoreboard sb = manager.getNewScoreboard();
@@ -378,7 +378,7 @@ public class Main extends JavaPlugin implements Listener {
         temp.setScore(20);
         p.setScoreboard(sb);
     }
-    private void _updateAffStats(PlayerSuperData ps)
+    private void updateAffStatsScoreBoard(PlayerSuperData ps)
     {
         Player p = ps.p;
         Scoreboard sb = p.getScoreboard();

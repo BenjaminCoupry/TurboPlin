@@ -26,6 +26,7 @@ public class PlayerSuperData {
         this.p = p;
     }
 
+    static private double regainEnergie = 0.02;
     static private int TailleMenu = 7;
     Player p;
     String[] statuts;
@@ -34,6 +35,8 @@ public class PlayerSuperData {
     List<Material> Menu;
     double eau;
     long cooldown;
+    double fatigue;
+    private double lastExhaustion;
 
 
     public PlayerSuperData(Player p)
@@ -43,6 +46,8 @@ public class PlayerSuperData {
         Menu = new ArrayList<>();
         temperature =20;
         eau = 100.0;
+        fatigue = 0;
+        lastExhaustion =0;
         varieteAlimentaire = 0;
         statuts = new String[4];
         statuts[0]="";
@@ -94,8 +99,21 @@ public class PlayerSuperData {
         eau = Math.max(0,eau - delta);
     }
 
+    public void updateFatigue()
+    {
+        double ex = p.getExhaustion();
+        double delta = Math.max(0,ex-lastExhaustion);
+        lastExhaustion = ex;
+        double deltaReel = 3.0*delta -regainEnergie;
+        fatigue = Math.min(Math.max(0,fatigue+deltaReel),100.0);
+    }
+
 
     //Getters
+    public double getFatigue()
+    {
+        return fatigue;
+    }
     public double getTempEquipement()
     {
         EntityEquipment e= p.getEquipment();
