@@ -344,6 +344,7 @@ public class Main extends JavaPlugin implements Listener {
             sd.appliquerEffetsPluie(r);
             sd.appliquerEffetsNutrition();
             sd.appliquerEffetsSoif();
+            sd.appliquerEffetsFatigue();
         }
         updateAffStats(sd);
     }

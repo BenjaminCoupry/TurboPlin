@@ -46,6 +46,7 @@ public class BarSet {
         barTemp.getBar().setColor(colorFromTemp(ps));
         barSoif.getBar().setColor(colorFromSoif(ps));
         barAlim.getBar().setColor(colorFromEquilibreAlim(ps));
+        barFatigue.getBar().setColor(colorFromFatigue(ps));
     }
 
     public BarColor colorFromTemp(PlayerSuperData ps)
@@ -85,6 +86,14 @@ public class BarSet {
         if(ps.estBienAlimente())
         {
             return BarColor.BLUE;
+        }
+        return BarColor.GREEN;
+    }
+    public BarColor colorFromFatigue(PlayerSuperData ps)
+    {
+        if(ps.estFatigue())
+        {
+            return BarColor.RED;
         }
         return BarColor.GREEN;
     }

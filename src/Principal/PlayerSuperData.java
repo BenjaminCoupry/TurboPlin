@@ -486,9 +486,16 @@ public class PlayerSuperData {
         {
             statuts[3]="Mourrant";
             PotionEffect p1 = new PotionEffect(PotionEffectType.HARM,2*20,1);
-            if(!p.hasPotionEffect(PotionEffectType.HARM)) {
-                p1.apply(p);
-            }
+            appEffet(p1);
+        }
+    }
+
+    public void appliquerEffetsFatigue()
+    {
+        if(estFatigue())
+        {
+            PotionEffect p1 = new PotionEffect(PotionEffectType.SLOW,4*20,1);
+            appEffet(p1);
         }
     }
 
@@ -521,6 +528,10 @@ public class PlayerSuperData {
 
 
     //Utils
+    public boolean estFatigue()
+    {
+        return fatigue>60;
+    }
     public boolean estGlacial()
     {
         return (temperature<-10);
