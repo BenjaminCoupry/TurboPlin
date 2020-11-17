@@ -36,6 +36,7 @@ public class Main extends JavaPlugin implements Listener {
     Random r;
     Map<String,PlayerSuperData> superdatas;
     Map<String,BarSet> UI;
+    Factions factions;
 
     //Plugin
     @Override
@@ -48,6 +49,50 @@ public class Main extends JavaPlugin implements Listener {
                 PlayerSuperData ps = superdatas.get(p.getName());
                 sender.sendMessage(ps.getStatusString());
                 return true;
+            }
+        }
+        if(label.equalsIgnoreCase("join"))
+        {
+            if(sender instanceof  Player)
+            {
+                Player p = (Player) sender;
+                factions.ajouterJoueur(args[0],p);
+                return true;
+            }
+        }
+        if(label.equalsIgnoreCase("factions"))
+        {
+            if(sender instanceof  Player)
+            {
+                Player p = (Player) sender;
+                sender.sendMessage(factions.getStringFactions());
+                return true;
+            }
+        }
+        if(label.equalsIgnoreCase("quit"))
+        {
+            if(sender instanceof  Player)
+            {
+                Player p = (Player) sender;
+                factions.supprimerJoueur(p);
+                return true;
+            }
+        }
+        if(label.equalsIgnoreCase("set_base"))
+        {
+            if(sender instanceof  Player)
+            {
+                Player p = (Player) sender;
+                Zone z = factions.creerBase(p);
+                if(z!= null)
+                {
+                    z.tracerFrontiere();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
         return false;
@@ -66,6 +111,7 @@ public class Main extends JavaPlugin implements Listener {
         r = new Random();
         superdatas = new HashMap<>();
         UI=new HashMap<>();
+        factions = new Factions();
         Material[] matArr = {Material.STONE_BRICK_WALL,Material.STONE_BRICK_SLAB,Material.STONE_BRICK_STAIRS,Material.STONE_BRICKS,Material.IRON_DOOR};
         tntOnly = Arrays.asList(matArr);
         this.getServer().getPluginManager().registerEvents(this,this);
