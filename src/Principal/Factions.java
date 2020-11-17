@@ -1,6 +1,10 @@
 package Principal;
 
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
 
@@ -97,6 +101,7 @@ public class Factions {
             {
                 Zone z = new Zone(p,rayonBase,r);
                 bases.put(f,z);
+                donnerMarqueurFaction(p);
                 return z;
             }
         }
@@ -113,6 +118,55 @@ public class Factions {
             }
         }
         return null;
+    }
+
+    public void donnerMarqueurFaction(Player p)
+    {
+        ItemStack marqueur = getMarqueurFaction(p);
+        if(marqueur != null) {
+            p.getWorld().dropItemNaturally(p.getLocation(), marqueur);
+        }
+    }
+
+    public boolean testerPossesionMarqueurFaction(Player p, String faction)
+    {
+        ItemStack mh = p.getEquipment().getItemInMainHand();
+        if(mh != null)
+        {
+            if(mh.hasItemMeta())
+            {
+                ItemMeta im = mh.getItemMeta();
+                if(im.hasLore())
+                {
+                    List<String> lore = im.getLore();
+                    if(lore.size()>0)
+                    {
+                        return lore.get(0).contains(faction);
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private ItemStack getMarqueurFaction(Player p)
+    {
+        String faction = factionDe(p);
+        if(faction != null)
+        {
+            ItemStack marque = new ItemStack(Material.COMPASS);
+            List<String> Lore = new ArrayList<String>();
+            Lore.add(faction);
+            ItemMeta m = marque.getItemMeta();
+            m.setLore(Lore);
+            m.setDisplayName(ChatColor.RED+"Faction " + factionDe(p));
+            marque.setItemMeta(m);
+            return marque;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public boolean estDansSaBase(Player p)
@@ -139,5 +193,23 @@ public class Factions {
         {
             return false;
         }
+    }
+
+    public boolean destructionDeFactionPar(Player p)
+    {
+        String fp = factionDe(p);
+        if(estDansSaBase(p))
+        {
+            for(String cible : factions.keySet()) {
+                if(cible != fp) {
+                    if (testerPossesionMarqueurFaction(p, cible)) {
+                        Main.callCommande("say "+ChatColor.RED + cible + " a été détruite par " + p.getName());
+                        supprimerFaction(cible);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

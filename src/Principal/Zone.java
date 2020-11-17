@@ -82,10 +82,11 @@ public class Zone {
                 else
                 {
                     b.setType(Material.COBBLESTONE_WALL);
+                    if(r.nextDouble()<0.08) {
+                        b.getRelative(0, 1, 0).setType(Material.LANTERN);
+                    }
                 }
-                if(r.nextDouble()<0.08) {
-                    b.getRelative(0, 1, 0).setType(Material.LANTERN);
-                }
+
             }
             k++;
         }

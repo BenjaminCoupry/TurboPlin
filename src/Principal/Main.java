@@ -9,6 +9,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -17,13 +18,11 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.EventHandler;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.*;
-import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import java.util.*;
 
@@ -77,6 +76,25 @@ public class Main extends JavaPlugin implements Listener {
                 Player p = (Player) sender;
                 factions.supprimerJoueur(p);
                 sender.sendMessage(factions.getStringFactions());
+                return true;
+            }
+        }
+        if(label.equalsIgnoreCase("win"))
+        {
+            if(sender instanceof  Player)
+            {
+                Player p = (Player) sender;
+                factions.destructionDeFactionPar(p);
+                sender.sendMessage(factions.getStringFactions());
+                return true;
+            }
+        }
+        if(label.equalsIgnoreCase("marqueur"))
+        {
+            if(sender instanceof  Player)
+            {
+                Player p = (Player) sender;
+                factions.donnerMarqueurFaction(p);
                 return true;
             }
         }
@@ -177,6 +195,22 @@ public class Main extends JavaPlugin implements Listener {
             event.setCancelled(true);
         }
 
+    }
+
+    @EventHandler
+    public void onPlacerBlock(BlockPlaceEvent event)
+    {
+        Player p = event.getPlayer();
+        Block b = event.getBlock();
+        if(factions.estDansBaseEnnemie(p))
+        {
+            if(b.getType() != Material.TNT)
+            {
+                event.setCancelled(true);
+                callCommande("tell "+p.getName()+" Vous êtes en faction adverse et ne" +
+                        " pouvez pas placer de block ici");
+            }
+        }
     }
 
     @EventHandler
