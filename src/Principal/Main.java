@@ -51,12 +51,13 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             }
         }
-        if(label.equalsIgnoreCase("join"))
+        if(label.equalsIgnoreCase("rejoindre"))
         {
             if(sender instanceof  Player)
             {
                 Player p = (Player) sender;
                 factions.ajouterJoueur(args[0],p);
+                sender.sendMessage(factions.getStringFactions());
                 return true;
             }
         }
@@ -69,12 +70,13 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             }
         }
-        if(label.equalsIgnoreCase("quit"))
+        if(label.equalsIgnoreCase("partir_factions"))
         {
             if(sender instanceof  Player)
             {
                 Player p = (Player) sender;
                 factions.supprimerJoueur(p);
+                sender.sendMessage(factions.getStringFactions());
                 return true;
             }
         }
@@ -86,7 +88,9 @@ public class Main extends JavaPlugin implements Listener {
                 Zone z = factions.creerBase(p);
                 if(z!= null)
                 {
+                    sender.sendMessage(factions.getStringFactions());
                     z.tracerFrontiere();
+                    callCommande("say "+p.getName()+" de la faction "+factions.factionDe(p)+" a créé sa base");
                     return true;
                 }
                 else
@@ -111,7 +115,7 @@ public class Main extends JavaPlugin implements Listener {
         r = new Random();
         superdatas = new HashMap<>();
         UI=new HashMap<>();
-        factions = new Factions();
+        factions = new Factions(r);
         Material[] matArr = {Material.STONE_BRICK_WALL,Material.STONE_BRICK_SLAB,Material.STONE_BRICK_STAIRS,Material.STONE_BRICKS,Material.IRON_DOOR};
         tntOnly = Arrays.asList(matArr);
         this.getServer().getPluginManager().registerEvents(this,this);

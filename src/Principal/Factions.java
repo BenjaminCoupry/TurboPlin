@@ -2,19 +2,18 @@ package Principal;
 
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Factions {
     private Map<String, List<String>> factions;
     private Map<String, Zone> bases;
     private static final int rayonBase = 30;
-    public Factions()
+    private Random r;
+    public Factions(Random r)
     {
         factions = new HashMap<>();
         bases = new HashMap<>();
+        this.r = r;
     }
     public void ajouterJoueur(String faction, Player p)
     {
@@ -96,7 +95,7 @@ public class Factions {
         {
             if(baseDe(p) == null)
             {
-                Zone z = new Zone(p,rayonBase);
+                Zone z = new Zone(p,rayonBase,r);
                 bases.put(f,z);
                 return z;
             }

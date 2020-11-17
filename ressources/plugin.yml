@@ -7,3 +7,7 @@ author: IceStorm310
 api-version: 1.16
 commands:
   stat:
+  factions:
+  rejoindre:
+  partir_factions:
+  set_base:
