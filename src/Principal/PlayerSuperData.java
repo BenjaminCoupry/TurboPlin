@@ -523,7 +523,7 @@ public class PlayerSuperData {
 
     public void appliquerEffetsPluie(Random r)
     {
-        if(estSousPluie()) {
+        if(estSousPluie() && p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),p.getLocation().getBlockZ())<1) {
             ItemStack casque = p.getEquipment().getHelmet();
             if(casque != null && casque.getType() == Material.CHAINMAIL_HELMET && casque.getItemMeta().hasLore()) {
 

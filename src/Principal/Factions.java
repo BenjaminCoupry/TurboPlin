@@ -1,7 +1,6 @@
 package Principal;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -211,5 +210,29 @@ public class Factions {
             }
         }
         return false;
+    }
+
+    public void spreadFactions(World w, Server s)
+    {
+        List<Player> joueurs = (List<Player>) s.getOnlinePlayers();
+        Location centre = w.getWorldBorder().getCenter();
+        double Rayon = w.getWorldBorder().getSize()/2.0;
+        for(String f : factions.keySet())
+        {
+            List<String> membres = factions.get(f);
+            double x = (r.nextDouble()*2.0-1.0)*Rayon+centre.getX();
+            double z = (r.nextDouble()*2.0-1.0)*Rayon+centre.getZ();
+            Location lf = w.getHighestBlockAt((int)x,(int)z).getLocation().add(0,2,0);
+            for(String m : membres)
+            {
+                for(Player p : joueurs)
+                {
+                    if(p.getName() == m)
+                    {
+                        p.teleport(lf);
+                    }
+                }
+            }
+        }
     }
 }

@@ -96,6 +96,15 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             }
         }
+        if(label.equalsIgnoreCase("spread_factions"))
+        {
+            if(sender instanceof  Player)
+            {
+                Player p = (Player) sender;
+                factions.spreadFactions(p.getWorld(),this.getServer());
+                return true;
+            }
+        }
         if(label.equalsIgnoreCase("set_base"))
         {
             if(sender instanceof  Player)
@@ -176,7 +185,17 @@ public class Main extends JavaPlugin implements Listener {
                     Block b = event.getClickedBlock();
                     if (p.getInventory().getItemInMainHand() != null) {
                         ItemStack it = p.getInventory().getItemInMainHand();
-                        SecurityDoor.actionSec(it, b,p,event.getAction());
+                        if(Recettes.isPetard(it)) {
+                            if(event.getAction() == Action.RIGHT_CLICK_BLOCK)
+                            {
+                                b.getWorld().createExplosion(b.getLocation(),1,false,false);
+                                b.setType(Material.AIR);
+                                p.getInventory().getItemInMainHand().setAmount(p.getInventory().getItemInMainHand().getAmount()-1);
+                            }
+                        }
+                        else {
+                            SecurityDoor.actionSec(it, b, p, event.getAction());
+                        }
                     }
                 }
             }
@@ -388,7 +407,7 @@ public class Main extends JavaPlugin implements Listener {
         sd.updateTemperature();
         sd.updateVarieteAlimentaire();
         sd.updateFatigue();
-        if(p.getGameMode() != GameMode.CREATIVE) {
+        if(p.getGameMode() != GameMode.CREATIVE && p.getGameMode() != GameMode.SPECTATOR) {
             sd.appliquerEffetTemperature();
             sd.appliquerEffetsPluie(r);
             sd.appliquerEffetsNutrition();

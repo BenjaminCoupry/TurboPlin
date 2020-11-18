@@ -75,6 +75,25 @@ public class Recettes {
         return recipe;
     }
 
+    public static ShapedRecipe getPetardRecipe(Plugin p)
+    {
+        ItemStack item =new ItemStack(Material.FLINT);
+        ItemMeta im = item.getItemMeta();
+        im.setDisplayName(ChatColor.YELLOW+"Petard");
+        List<String> lore = new ArrayList<>();
+        lore.add("Petard");
+        im.setLore(lore);
+        item.setItemMeta(im);
+        NamespacedKey key = new NamespacedKey(p,"petard");
+        ShapedRecipe recipe = new ShapedRecipe(key,item);
+        recipe.shape("FPF","FPF","DSD");
+        recipe.setIngredient('F',Material.FLINT);
+        recipe.setIngredient('P',Material.GUNPOWDER);
+        recipe.setIngredient('D',Material.FLINT_AND_STEEL);
+        recipe.setIngredient('S',Material.BUCKET);
+
+        return recipe;
+    }
 
     //Ajouts
     public static void ajouterRecettesThermiques(Plugin p,Material concerne)
@@ -111,6 +130,7 @@ public class Recettes {
     {
         Bukkit.addRecipe(getRChainmailHelmetRecipe(p));
         Bukkit.addRecipe(getNukeRecipe(p));
+        Bukkit.addRecipe(getPetardRecipe(p));
         ajouterRecettesThermiques(p);
     }
 
@@ -139,6 +159,19 @@ public class Recettes {
                 if(I.getItemMeta().hasLore())
                 {
                     return true;
+                }
+            }
+        }
+        return false;
+    }
+    public static boolean isPetard(ItemStack I)
+    {
+        if(I != null) {
+            if (I.getType() == Material.FLINT) {
+                if (I.getItemMeta().getDisplayName().contains("Petard")) {
+                    if (I.getItemMeta().hasLore()) {
+                        return true;
+                    }
                 }
             }
         }
