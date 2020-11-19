@@ -348,6 +348,12 @@ public class Factions implements Serializable {
         }
         if(r.nextDouble()<0.5)
         {
+            is = new ItemStack(Material.SADDLE);
+            is.setAmount(3);
+            p.getWorld().dropItemNaturally(p.getLocation(),is);
+        }
+        if(r.nextDouble()<0.5)
+        {
             is = new ItemStack(Material.SPLASH_POTION);
             PotionMeta pm = (PotionMeta)is.getItemMeta();
             pm.addCustomEffect(new PotionEffect(PotionEffectType.ABSORPTION,60*20,3),true);
