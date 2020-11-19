@@ -23,6 +23,7 @@ public class Zone implements Serializable {
     private static List<Material> pasdeFrontiere;
     public Zone(Player p, int rayon)
     {
+
         Material[] pasdeFrontiere_ = new Material[]{Material.WATER,Material.LAVA};
         pasdeFrontiere = Arrays.asList(pasdeFrontiere_);
         this.rayon = rayon;

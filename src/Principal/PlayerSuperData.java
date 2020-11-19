@@ -4,6 +4,7 @@ import net.minecraft.server.v1_16_R2.WorldGenFeatureOceanRuin;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.WeatherType;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Campfire;
 import org.bukkit.entity.EntityType;
@@ -630,7 +631,7 @@ public class PlayerSuperData implements Serializable {
 
     public boolean estSousPluie()
     {
-        return estExposeAuCiel() && (p.getWorld().hasStorm() || p.getWorld().isThundering());
+        return p.getLocation().getWorld().getEnvironment().equals(World.Environment.NORMAL) && estExposeAuCiel() && (p.getWorld().hasStorm() || p.getWorld().isThundering());
     }
 
     public void Manger(Material i)

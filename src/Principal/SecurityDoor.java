@@ -46,7 +46,7 @@ public class SecurityDoor {
                         if(s!= null)
                         {
                             String actuel = s.getLine(0);
-                            if(actuel.contains(hash)) {
+                            if(actuel.equals(hash)) {
                                 Door d = (Door) (b.getState().getBlockData());
                                 if(act == Action.RIGHT_CLICK_BLOCK) {
                                     if (!d.isPowered()) {
@@ -90,7 +90,7 @@ public class SecurityDoor {
                     Block b_ = b.getWorld().getBlockAt(l0);
                     if (b_.getState() instanceof Sign) {
                         Sign s = (Sign) (b_.getState());
-                        if(s.getLine(1).contains(hashLoc1) ||s.getLine(1).contains(hashLoc2)) {
+                        if(s.getLine(1).equals(hashLoc1) ||s.getLine(1).equals(hashLoc2)) {
                             return s;
                         }
                     }

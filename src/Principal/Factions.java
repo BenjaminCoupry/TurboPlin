@@ -1,5 +1,6 @@
 package Principal;
 
+
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -175,9 +176,9 @@ public class Factions implements Serializable {
     public boolean estDansSaBase(Player p)
     {
         String f = factionDe(p);
-        if(f!=null)
+        if(f!=null && p.getLocation().getWorld().getEnvironment().equals(World.Environment.NORMAL))
         {
-            return f == getNomFactionLocalisationJoueur(p);
+            return f.equals(getNomFactionLocalisationJoueur(p));
         }
         else
         {
@@ -188,9 +189,9 @@ public class Factions implements Serializable {
     {
         String fp = factionDe(p);
         String fl = getNomFactionLocalisationJoueur(p);
-        if(fl!=null)
+        if(fl!=null && p.getLocation().getWorld().getEnvironment().equals(World.Environment.NORMAL))
         {
-            return fp != fl;
+            return !fp.equals(fl);
         }
         else
         {
@@ -204,7 +205,7 @@ public class Factions implements Serializable {
         if(estDansSaBase(p))
         {
             for(String cible : factions.keySet()) {
-                if(cible != fp) {
+                if(!cible.equals(fp)) {
                     if (testerPossesionMarqueurFaction(p, cible)) {
                         Main.callCommande("say "+ChatColor.RED + cible + " a été détruite par " + p.getName());
                         supprimerFaction(cible);
@@ -233,8 +234,10 @@ public class Factions implements Serializable {
             {
                 for(Player p : joueurs)
                 {
-                    if(p.getName() == m)
+                    s.getLogger().info(p.getName()+" "+m);
+                    if(p.getName().equals(m))
                     {
+                        s.getLogger().info("ok "+p.getName()+" "+m);
                         donnerStuffBase(p,main);
                         p.teleport(lf);
                     }
@@ -246,6 +249,7 @@ public class Factions implements Serializable {
 
     public void forcerBases(Main main)
     {
+        Random r = new Random();
         Server s = main.getServer();
         List<Player> joueurs = (List<Player>) s.getOnlinePlayers();
         for(String f : factions.keySet())
@@ -256,9 +260,11 @@ public class Factions implements Serializable {
                 String m = membres.get(0);
                 for(Player p : joueurs)
                 {
-                    if(p.getName() == m)
+                    if(p.getName().equals(m))
                     {
-                        creerBase(p);
+                        Zone z = creerBase(p);
+                        z.tracerFrontiere(p.getWorld(), r);
+                        Main.callCommande("say "+p.getName()+" de la faction "+factionDe(p)+" a créé sa base");
                         break;
                     }
                 }
@@ -308,6 +314,14 @@ public class Factions implements Serializable {
             if(temps%(10*60) == 0)
             {
                 Main.callCommande("say "+ChatColor.RED+"Vous jouez depuis "+(temps/60) + " minutes");
+            }
+            if(temps%(37*60) == 0)
+            {
+                Main.callCommande("say "+ChatColor.RED+"Un terrible évènement est à prévoir ...");
+            }
+            if(temps%(40*60) == 0)
+            {
+                EventsTemporels.superVagueZombie(m);
             }
         }
     }

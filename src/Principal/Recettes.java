@@ -43,10 +43,10 @@ public class Recettes {
         ItemMeta meta = item.getItemMeta();
         List<String> Lore = new ArrayList<>();
         String couleur = "";
-        if(temp=="Chaud")
+        if(temp.equals("Chaud"))
         {
             couleur=ChatColor.RED+"";
-        } else if (temp == "Froid")
+        } else if (temp.equals("Froid"))
         {
             couleur = ChatColor.BLUE+"";
         }
@@ -180,11 +180,11 @@ public class Recettes {
 
     public static Material getModifTemp(String mod)
     {
-        if(mod=="Chaud")
+        if(mod.equals( "Chaud"))
         {
             return Material.LEATHER;
         }
-        else if(mod=="Froid")
+        else if(mod.equals("Froid"))
         {
             return Material.FEATHER;
         }
