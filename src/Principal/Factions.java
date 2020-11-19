@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -15,12 +16,14 @@ import java.util.*;
 public class Factions implements Serializable {
     private Map<String, List<String>> factions;
     private Map<String, Zone> bases;
+    private List<Zone> lootZones;
     private static final int rayonBase = 30;
     private long temps;
     public Factions()
     {
         factions = new HashMap<>();
         bases = new HashMap<>();
+        lootZones = new ArrayList<>();
         temps =0;
     }
     public void ajouterJoueur(String faction, Player p)
@@ -103,8 +106,9 @@ public class Factions implements Serializable {
         {
             if(baseDe(p) == null)
             {
-                Zone z = new Zone(p,rayonBase);
+                Zone z = new Zone(p.getLocation(),rayonBase);
                 bases.put(f,z);
+                p.setBedSpawnLocation(p.getLocation(),true);
                 donnerMarqueurFaction(p);
                 return z;
             }
@@ -272,6 +276,209 @@ public class Factions implements Serializable {
         }
     }
 
+    public void creerLootZone( Main main)
+    {
+        Random r = main.r;
+        Server s = main.getServer();
+        List<Player> joueurs = (List<Player>) s.getOnlinePlayers();
+        if(joueurs.size()>0) {
+            if( joueurs.get(0).getLocation().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
+                World w = joueurs.get(0).getWorld();
+                Location centre = w.getWorldBorder().getCenter();
+                double Rayon = w.getWorldBorder().getSize() / 2.0;
+                double x = (r.nextDouble()*2.0-1.0)*Rayon+centre.getX();
+                double z = (r.nextDouble()*2.0-1.0)*Rayon+centre.getZ();
+                Main.callCommande("say Un trésor secret est apparu en "+x+" "+z);
+                Location lf = w.getHighestBlockAt((int)x,(int)z).getLocation().add(0,2,0);
+                Zone zone = new Zone(lf,5);
+                zone.tracerFrontiere(w,r);
+                lootZones.add(zone);
+            }
+        }
+    }
+
+
+    public void looter(Player p)
+    {
+        if(p.getGameMode() == GameMode.SURVIVAL) {
+            Zone looted = null;
+            for (Zone z : lootZones) {
+                if (z.dansZone(p)) {
+                    looted = z;
+                    Main.callCommande("say Un trésor a été trouvé en " + z.getCentreX() + " " + z.getCentreZ());
+                    donnerLoot(p);
+                    break;
+                }
+            }
+            if (looted != null) {
+                lootZones.remove(looted);
+            }
+        }
+    }
+
+    public void donnerLoot(Player p)
+    {
+        Random r = new Random();
+        if(r.nextDouble()<0.9)
+        {
+            donnerLootBien(p);
+        }
+        else
+        {
+            donnerLootMauvais(p);
+        }
+    }
+    public void donnerLootBien(Player p)
+    {
+
+        Random r = new Random();
+        ItemStack is = new ItemStack(Material.DIAMOND);
+        p.getWorld().dropItemNaturally(p.getLocation(),is);
+        if(r.nextDouble()<0.5)
+        {
+            is = new ItemStack(Material.BLAZE_ROD);
+            is.setAmount(2);
+            p.getWorld().dropItemNaturally(p.getLocation(),is);
+        }
+        if(r.nextDouble()<0.5)
+        {
+            is = new ItemStack(Material.NETHER_WART);
+            is.setAmount(6);
+            p.getWorld().dropItemNaturally(p.getLocation(),is);
+        }
+        if(r.nextDouble()<0.5)
+        {
+            is = new ItemStack(Material.SPLASH_POTION);
+            PotionMeta pm = (PotionMeta)is.getItemMeta();
+            pm.addCustomEffect(new PotionEffect(PotionEffectType.ABSORPTION,60*20,3),true);
+            is.setItemMeta(pm);
+            p.getWorld().dropItemNaturally(p.getLocation(),is);
+            if(r.nextDouble()<0.5)
+            {
+                is = new ItemStack(Material.DIAMOND_CHESTPLATE);
+                p.getWorld().dropItemNaturally(p.getLocation(),is);
+                if(r.nextDouble()<0.5)
+                {
+                    is = new ItemStack(Material.ENCHANTED_GOLDEN_APPLE);
+                    p.getWorld().dropItemNaturally(p.getLocation(),is);
+                    if(r.nextDouble()<0.5)
+                    {
+                        is = new ItemStack(Material.NETHERITE_BLOCK);
+                        is.setAmount(r.nextInt(3)+1);
+                        p.getWorld().dropItemNaturally(p.getLocation(),is);
+                    }
+                }
+                is = new ItemStack(Material.ANVIL);
+                p.getWorld().dropItemNaturally(p.getLocation(),is);
+                if(r.nextDouble()<0.5)
+                {
+                    is = new ItemStack(Material.GOLDEN_APPLE);
+                    p.getWorld().dropItemNaturally(p.getLocation(),is);
+                    if(r.nextDouble()<0.5)
+                    {
+                        is = new ItemStack(Material.NETHER_STAR);
+                        p.getWorld().dropItemNaturally(p.getLocation(),is);
+                    }
+                }
+                is = new ItemStack(Material.NETHER_WART);
+                p.getWorld().dropItemNaturally(p.getLocation(),is);
+                if(r.nextDouble()<0.5)
+                {
+                    is = new ItemStack(Material.BELL);
+                    p.getWorld().dropItemNaturally(p.getLocation(),is);
+                    if(r.nextDouble()<0.5)
+                    {
+                        is = new ItemStack(Material.BLAZE_POWDER);
+                        p.getWorld().dropItemNaturally(p.getLocation(),is);
+                    }
+                }
+            }
+        }
+        if(r.nextDouble()<0.5)
+        {
+            is = new ItemStack(Material.POTION);
+            PotionMeta pm = (PotionMeta)is.getItemMeta();
+            pm.addCustomEffect(new PotionEffect(PotionEffectType.REGENERATION,10*20,3),true);
+            is.setItemMeta(pm);
+            p.getWorld().dropItemNaturally(p.getLocation(),is);
+            if(r.nextDouble()<0.5)
+            {
+                is = new ItemStack(Material.APPLE);
+                p.getWorld().dropItemNaturally(p.getLocation(),is);
+                if(r.nextDouble()<0.5)
+                {
+                    is = new ItemStack(Material.SPLASH_POTION);
+                    PotionMeta pm2 = (PotionMeta)is.getItemMeta();
+                    pm2.addCustomEffect(new PotionEffect(PotionEffectType.CONFUSION,120*20,2),true);
+                    is.setItemMeta(pm2);
+                    p.getWorld().dropItemNaturally(p.getLocation(),is);
+                    if(r.nextDouble()<0.5)
+                    {
+                        is = new ItemStack(Material.TNT);
+                        is.setAmount(r.nextInt(3)+1);
+                        p.getWorld().dropItemNaturally(p.getLocation(),is);
+                    }
+                }
+            }
+            if(r.nextDouble()<0.5)
+            {
+                is = new ItemStack(Material.BLAZE_ROD);
+                p.getWorld().dropItemNaturally(p.getLocation(),is);
+                if(r.nextDouble()<0.5)
+                {
+                    is = new ItemStack(Material.SPLASH_POTION);
+                    PotionMeta pm2 = (PotionMeta)is.getItemMeta();
+                    pm.addCustomEffect(new PotionEffect(PotionEffectType.BLINDNESS,120*20,2),true);
+                    is.setItemMeta(pm2);
+                    p.getWorld().dropItemNaturally(p.getLocation(),is);
+                    if(r.nextDouble()<0.5)
+                    {
+                        is = new ItemStack(Material.DIAMOND_BLOCK);
+                        is.setAmount(r.nextInt(3)+1);
+                        p.getWorld().dropItemNaturally(p.getLocation(),is);
+                    }
+                }
+            }
+        }
+    }
+    public void donnerLootMauvais(Player p)
+    {
+        Random r = new Random();
+        ItemStack is = new ItemStack(Material.CHAIN);
+        is.setAmount(64);
+        p.getWorld().dropItemNaturally(p.getLocation(),is);
+        if(r.nextDouble()<0.5)
+        {
+            is = new ItemStack(Material.ACACIA_SIGN);
+            is.setAmount(16);
+            p.getWorld().dropItemNaturally(p.getLocation(),is);
+        }
+        if(r.nextDouble()<0.5)
+        {
+            is = new ItemStack(Material.WOODEN_SHOVEL);
+            is.setAmount(3);
+            p.getWorld().dropItemNaturally(p.getLocation(),is);
+        }
+        if(r.nextDouble()<0.5)
+        {
+            is = new ItemStack(Material.WOODEN_SWORD);
+            is.setAmount(3);
+            p.getWorld().dropItemNaturally(p.getLocation(),is);
+        }
+        if(r.nextDouble()<0.5)
+        {
+            is = new ItemStack(Material.LIME_STAINED_GLASS);
+            is.setAmount(1);
+            p.getWorld().dropItemNaturally(p.getLocation(),is);
+        }
+        if(r.nextDouble()<0.5)
+        {
+            is = new ItemStack(Material.BAMBOO);
+            is.setAmount(1);
+            p.getWorld().dropItemNaturally(p.getLocation(),is);
+        }
+    }
+
     public void startTimer(Main main)
     {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(main, new Runnable() {
@@ -306,6 +513,7 @@ public class Factions implements Serializable {
             }
             if(temps == 10*60)
             {
+                m.immunise = false;
                 forcerBases(m);
             }
         }
@@ -315,13 +523,21 @@ public class Factions implements Serializable {
             {
                 Main.callCommande("say "+ChatColor.RED+"Vous jouez depuis "+(temps/60) + " minutes");
             }
-            if(temps%(37*60) == 0)
+            if((temps+120)%(40*60) == 0)
             {
                 Main.callCommande("say "+ChatColor.RED+"Un terrible évènement est à prévoir ...");
             }
             if(temps%(40*60) == 0)
             {
                 EventsTemporels.superVagueZombie(m);
+            }
+            if((temps+30*60+5*60)%(40*60) == 0)
+            {
+                Main.callCommande("say "+ChatColor.RED+"Un coffre va apparaître ...");
+            }
+            if((temps+30*60)%(40*60) == 0)
+            {
+                creerLootZone(m);
             }
         }
     }

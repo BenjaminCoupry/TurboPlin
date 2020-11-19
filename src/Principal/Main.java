@@ -9,6 +9,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -35,6 +36,7 @@ public class Main extends JavaPlugin implements Listener {
     Map<String,PlayerSuperData> superdatas;
     Map<String,BarSet> UI;
     Factions factions;
+    public boolean immunise;
 
     public void saveDatas(String path)
     {
@@ -174,6 +176,15 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             }
         }
+        if(label.equalsIgnoreCase("lootMe"))
+        {
+            if(sender instanceof  Player)
+            {
+                Player p = (Player) sender;
+                factions.creerLootZone(this);
+                return true;
+            }
+        }
         if(label.equalsIgnoreCase("set_base"))
         {
             if(sender instanceof  Player)
@@ -209,7 +220,7 @@ public class Main extends JavaPlugin implements Listener {
         this.getServer().getLogger().info("TurboStart");
         Recettes.ajouterRecettes(this);
         r = new Random();
-
+        immunise = true;
         superdatas = chargerSuperdatas("TurboPlinPlayerDatas");
         if(superdatas == null) {
             superdatas = new HashMap<> ();
@@ -311,6 +322,41 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onBlockBreak(BlockBreakEvent event)
+    {
+        Player p = (Player) event.getPlayer();
+        Block b = event.getBlock();
+        if(p.getGameMode() == GameMode.SURVIVAL && tntOnly.contains(b.getType()))
+        {
+            event.setCancelled(true);
+        }
+        else
+        {
+            if(b.getType() == Material.DIRT || b.getType() == Material.GRASS_BLOCK)
+            {
+                if(r.nextDouble()<0.01) {
+                    p.getWorld().dropItemNaturally(b.getLocation(), new ItemStack(Material.IRON_INGOT));
+                }
+                if(r.nextDouble()<0.02) {
+                    p.getWorld().dropItemNaturally(b.getLocation(), new ItemStack(Material.GOLD_INGOT));
+                }
+                if(r.nextDouble()<0.01) {
+                    p.getWorld().dropItemNaturally(b.getLocation(), new ItemStack(Material.GOLD_NUGGET));
+                }
+                if(r.nextDouble()<0.02) {
+                    p.getWorld().dropItemNaturally(b.getLocation(), new ItemStack(Material.IRON_NUGGET));
+                }
+                if(r.nextDouble()<0.02) {
+                    p.getWorld().dropItemNaturally(b.getLocation(), new ItemStack(Material.FLINT));
+                }
+                if(r.nextDouble()<0.02) {
+                    p.getWorld().dropItemNaturally(b.getLocation(), new ItemStack(Material.CLAY_BALL));
+                }
+            }
+        }
+    }
+
+    @EventHandler
     public void onPlacerBlock(BlockPlaceEvent event)
     {
         Player p = event.getPlayer();
@@ -383,11 +429,6 @@ public class Main extends JavaPlugin implements Listener {
                         zp.getEquipment().setItemInMainHand(p.getEquipment().getItemInMainHand().clone());
                     }
 
-                    for(ItemStack is : p.getInventory()) {
-                        if(is!=null) {
-                            p.getWorld().dropItemNaturally(p.getLocation(), is);
-                        }
-                    }
                     zp.setCustomName("(Z)"+p.getName());
                     zp.setCustomNameVisible(true);
                 }
@@ -495,7 +536,8 @@ public class Main extends JavaPlugin implements Listener {
         sd.updateTemperature();
         sd.updateVarieteAlimentaire();
         sd.updateFatigue();
-        if(p.getGameMode() != GameMode.CREATIVE && p.getGameMode() != GameMode.SPECTATOR) {
+        if(p.getGameMode() != GameMode.CREATIVE && p.getGameMode() != GameMode.SPECTATOR && !immunise) {
+            factions.looter(p);
             sd.appliquerEffetTemperature();
             sd.appliquerEffetsPluie(r);
             sd.appliquerEffetsNutrition();

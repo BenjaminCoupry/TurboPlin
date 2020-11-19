@@ -111,7 +111,7 @@ public class PlayerSuperData implements Serializable {
         double delta = 0;
         if(p.isSprinting())
         {
-            delta =3*regainEnergie;
+            delta =1.6*regainEnergie;
         }
         if(p.isSneaking())
         {
@@ -550,8 +550,8 @@ public class PlayerSuperData implements Serializable {
 
             }
             else {
-                PotionEffect tox = new PotionEffect(PotionEffectType.CONFUSION, 30 * 20, 3);
-                PotionEffect acide = new PotionEffect(PotionEffectType.POISON, 4 * 20, 3);
+                PotionEffect tox = new PotionEffect(PotionEffectType.CONFUSION, 15 * 20, 4);
+                PotionEffect acide = new PotionEffect(PotionEffectType.POISON, 2 * 20, 0);
                 appEffet(tox);appEffet(acide);
             }
         }

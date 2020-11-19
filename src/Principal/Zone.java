@@ -18,22 +18,33 @@ import java.util.Random;
 
 public class Zone implements Serializable {
     private int centreX;
+
+    public int getCentreX() {
+        return centreX;
+    }
+
+    public int getCentreZ() {
+        return centreZ;
+    }
+
     private int centreZ;
     private int rayon;
     private static List<Material> pasdeFrontiere;
-    public Zone(Player p, int rayon)
+    public Zone(Location p, int rayon)
     {
 
         Material[] pasdeFrontiere_ = new Material[]{Material.WATER,Material.LAVA};
         pasdeFrontiere = Arrays.asList(pasdeFrontiere_);
         this.rayon = rayon;
-        centreX = p.getLocation().getBlock().getLocation().getBlockX();
-        centreZ = p.getLocation().getBlock().getLocation().getBlockY();
+        centreX = p.getBlock().getLocation().getBlockX();
+        centreZ = p.getBlock().getLocation().getBlockZ();
     }
     public boolean dansZone(Player p)
     {
         Location lp = p.getLocation().getBlock().getLocation();
-        return Math.abs(lp.getX()-centreX)<rayon && Math.abs(lp.getZ()- centreZ)<rayon;
+        double dx = Math.abs(lp.getX()-centreX);
+        double dz = Math.abs(lp.getZ()- centreZ);
+        return dx<rayon && dz<rayon;
     }
     private List<Block> getFrontiere(World w)
     {
@@ -91,7 +102,7 @@ public class Zone implements Serializable {
             k++;
         }
     }
-    public boolean frontierePossible(Block b)
+    private static boolean frontierePossible(Block b)
     {
         if(!pasdeFrontiere.contains(b.getType()))
         {
