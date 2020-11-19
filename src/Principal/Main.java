@@ -22,6 +22,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.*;
 
+import java.io.*;
 import java.util.*;
 
 public class Main extends JavaPlugin implements Listener {
@@ -34,6 +35,74 @@ public class Main extends JavaPlugin implements Listener {
     Map<String,PlayerSuperData> superdatas;
     Map<String,BarSet> UI;
     Factions factions;
+
+    public void saveDatas(String path)
+    {
+        try {
+            String pathsd = path + "/superdatas.ser";
+            String pathfact = path + "/factions.ser";
+            FileOutputStream fsd = new FileOutputStream(pathsd);
+            ObjectOutputStream osd = new ObjectOutputStream(fsd);
+            osd.writeObject(superdatas);
+            osd.close();
+            fsd.close();
+            FileOutputStream ff = new FileOutputStream(pathfact);
+            ObjectOutputStream of = new ObjectOutputStream(ff);
+            of.writeObject(factions);
+            of.close();
+            of.close();
+        }catch (IOException i)
+        {
+            System.out.println(i.getMessage());
+        }
+    }
+    public Factions chargerFactions(String path)
+    {
+        String pathfact = path + "/factions.ser";
+        File f = new File(pathfact);
+        if(f.exists() && !f.isDirectory()) {
+            try {
+                FileInputStream ff = new FileInputStream(pathfact);
+                ObjectInputStream of = new ObjectInputStream(ff);
+                Factions ret = (Factions)of.readObject();
+                of.close();
+                of.close();
+                return ret;
+            }catch (IOException i)
+            {
+                System.out.println(i.getMessage());
+                return null;
+            }catch (ClassNotFoundException c) {
+                c.printStackTrace();
+                return null;
+            }
+
+        }
+        return null;
+    }
+    public Map<String,PlayerSuperData> chargerSuperdatas(String path)
+    {
+        String pathsd = path + "/superdatas.ser";
+        File f = new File(pathsd);
+        if(f.exists() && !f.isDirectory()) {
+            try {
+                FileInputStream ff = new FileInputStream(pathsd);
+                ObjectInputStream of = new ObjectInputStream(ff);
+                Map<String,PlayerSuperData> ret = (Map<String,PlayerSuperData>)of.readObject();
+                of.close();
+                of.close();
+                return ret;
+            }catch (IOException i)
+            {
+                System.out.println(i.getMessage());
+                return null;
+            }catch (ClassNotFoundException c) {
+                c.printStackTrace();
+                return null;
+            }
+        }
+        return null;
+    }
 
     //Plugin
     @Override
@@ -101,7 +170,7 @@ public class Main extends JavaPlugin implements Listener {
             if(sender instanceof  Player)
             {
                 Player p = (Player) sender;
-                factions.spreadFactions(p.getWorld(),this.getServer());
+                factions.spreadFactions(p.getWorld(),this);
                 return true;
             }
         }
@@ -114,7 +183,7 @@ public class Main extends JavaPlugin implements Listener {
                 if(z!= null)
                 {
                     sender.sendMessage(factions.getStringFactions());
-                    z.tracerFrontiere();
+                    z.tracerFrontiere(p.getWorld(), r);
                     callCommande("say "+p.getName()+" de la faction "+factions.factionDe(p)+" a créé sa base");
                     return true;
                 }
@@ -130,6 +199,8 @@ public class Main extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         super.onDisable();
+        this.getServer().getLogger().info("TurboStop");
+        saveDatas("TurboPlinPlayerDatas");
     }
 
     @Override
@@ -138,9 +209,17 @@ public class Main extends JavaPlugin implements Listener {
         this.getServer().getLogger().info("TurboStart");
         Recettes.ajouterRecettes(this);
         r = new Random();
-        superdatas = new HashMap<>();
+
+        superdatas = chargerSuperdatas("TurboPlinPlayerDatas");
+        if(superdatas == null) {
+            superdatas = new HashMap<> ();
+        }
         UI=new HashMap<>();
-        factions = new Factions(r);
+        factions = chargerFactions("TurboPlinPlayerDatas");
+        if(factions == null) {
+            factions = new Factions();
+        }
+
         Material[] matArr = {Material.STONE_BRICK_WALL,Material.STONE_BRICK_SLAB,Material.STONE_BRICK_STAIRS,Material.STONE_BRICKS,Material.IRON_DOOR};
         tntOnly = Arrays.asList(matArr);
         this.getServer().getPluginManager().registerEvents(this,this);
@@ -400,6 +479,15 @@ public class Main extends JavaPlugin implements Listener {
         }
         setupAffStats(p);
     }
+    public void playerReset(Player p)
+    {
+        if(superdatas.containsKey(p.getName())) {
+            superdatas.remove(p.getName());
+        }
+        superdatas.put(p.getName(), new PlayerSuperData(p));
+        setupAffStats(p);
+    }
+
     private void playerUpdate(Player p)
     {
         PlayerSuperData sd = superdatas.get(p.getName());

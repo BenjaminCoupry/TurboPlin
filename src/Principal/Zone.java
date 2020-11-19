@@ -10,35 +10,34 @@ import org.bukkit.block.data.type.Leaves;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class Zone {
-    private Location centre;
+public class Zone implements Serializable {
+    private int centreX;
+    private int centreZ;
     private int rayon;
-    private World w;
-    private Random r;
-    private List<Material> pasdeFrontiere;
-    public Zone(Player p, int rayon, Random r)
+    private static List<Material> pasdeFrontiere;
+    public Zone(Player p, int rayon)
     {
         Material[] pasdeFrontiere_ = new Material[]{Material.WATER,Material.LAVA};
         pasdeFrontiere = Arrays.asList(pasdeFrontiere_);
         this.rayon = rayon;
-        centre = p.getLocation().getBlock().getLocation();
-        w = p.getWorld();
-        this.r = r;
+        centreX = p.getLocation().getBlock().getLocation().getBlockX();
+        centreZ = p.getLocation().getBlock().getLocation().getBlockY();
     }
     public boolean dansZone(Player p)
     {
         Location lp = p.getLocation().getBlock().getLocation();
-        return Math.abs(lp.getX()-centre.getX())<rayon && Math.abs(lp.getZ()-centre.getZ())<rayon;
+        return Math.abs(lp.getX()-centreX)<rayon && Math.abs(lp.getZ()- centreZ)<rayon;
     }
-    private List<Block> getFrontiere()
+    private List<Block> getFrontiere(World w)
     {
         List<Block> ret = new ArrayList<>();
-        ret.add(w.getHighestBlockAt(centre.getBlockX(),centre.getBlockZ()).getRelative(0,1,0));
+        ret.add(w.getHighestBlockAt(centreX, centreZ).getRelative(0,1,0));
         for(int i=-rayon;i<=rayon;i++)
         {
             int j;
@@ -64,16 +63,16 @@ public class Zone {
                         ir = j;
                         j=i;
                     }
-                    ret.add(w.getHighestBlockAt(ir+centre.getBlockX(),j+centre.getBlockZ()).getRelative(0,1,0));
+                    ret.add(w.getHighestBlockAt(ir+centreX,j+ centreZ).getRelative(0,1,0));
                 }
             }
         }
         return ret;
     }
-    public void tracerFrontiere()
+    public void tracerFrontiere(World w, Random r)
     {
         int k=0;
-        for(Block b : getFrontiere())
+        for(Block b : getFrontiere(w))
         {
             if(frontierePossible(b.getRelative(0,-1,0))) {
                 if(k==0) {

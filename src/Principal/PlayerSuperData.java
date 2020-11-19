@@ -16,11 +16,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class PlayerSuperData {
+public class PlayerSuperData implements Serializable {
 
     public void setP(Player p) {
         this.p = p;
@@ -31,7 +32,7 @@ public class PlayerSuperData {
     static private double regainEnergieManger = 20;
     static private int TailleMenu = 7;
     static private int RayonTemperature = 2;
-    Player p;
+    transient Player p;
     String[] statuts;
     double varieteAlimentaire;
     double temperature;
@@ -105,10 +106,17 @@ public class PlayerSuperData {
 
     public void updateFatigue()
     {
-        double ex = p.getExhaustion();
-        double delta = Math.max(0,ex-lastExhaustion);
-        lastExhaustion = ex;
-        double deltaReel = 10.0*delta -regainEnergie;
+
+        double delta = 0;
+        if(p.isSprinting())
+        {
+            delta =3*regainEnergie;
+        }
+        if(p.isSneaking())
+        {
+            delta -= regainEnergie;
+        }
+        double deltaReel = delta -regainEnergie;
         fatigue = Math.min(Math.max(0,fatigue+deltaReel),100.0);
     }
 
@@ -483,9 +491,10 @@ public class PlayerSuperData {
         {
             //Bien Nourri
             statuts[1] = "Bien Nourri";
-            PotionEffect p1 = new PotionEffect(PotionEffectType.FAST_DIGGING,2*20,1);
+            PotionEffect p1 = new PotionEffect(PotionEffectType.FAST_DIGGING,2*20,0);
             PotionEffect p2 = new PotionEffect(PotionEffectType.INCREASE_DAMAGE,2*20,1);
-            appEffet(p1);appEffet(p2);
+            PotionEffect p3 = new PotionEffect(PotionEffectType.ABSORPTION,80*20,1);
+            appEffet(p1);appEffet(p2);appEffet(p3);
         }
     }
 
@@ -595,7 +604,7 @@ public class PlayerSuperData {
         {
             PotionEffect present = p.getPotionEffect(t);
             if(present.getDuration()<10) {
-                p.removePotionEffect(t);
+                //p.removePotionEffect(t);
                 e.apply(p);
             }
         }

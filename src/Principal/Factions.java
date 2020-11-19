@@ -2,21 +2,25 @@ package Principal;
 
 import org.bukkit.*;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Factions {
+public class Factions implements Serializable {
     private Map<String, List<String>> factions;
     private Map<String, Zone> bases;
     private static final int rayonBase = 30;
-    private Random r;
-    public Factions(Random r)
+    private long temps;
+    public Factions()
     {
         factions = new HashMap<>();
         bases = new HashMap<>();
-        this.r = r;
+        temps =0;
     }
     public void ajouterJoueur(String faction, Player p)
     {
@@ -98,7 +102,7 @@ public class Factions {
         {
             if(baseDe(p) == null)
             {
-                Zone z = new Zone(p,rayonBase,r);
+                Zone z = new Zone(p,rayonBase);
                 bases.put(f,z);
                 donnerMarqueurFaction(p);
                 return z;
@@ -212,8 +216,10 @@ public class Factions {
         return false;
     }
 
-    public void spreadFactions(World w, Server s)
+    public void spreadFactions(World w, Main main)
     {
+        Random r = main.r;
+        Server s = main.getServer();
         List<Player> joueurs = (List<Player>) s.getOnlinePlayers();
         Location centre = w.getWorldBorder().getCenter();
         double Rayon = w.getWorldBorder().getSize()/2.0;
@@ -229,9 +235,79 @@ public class Factions {
                 {
                     if(p.getName() == m)
                     {
+                        donnerStuffBase(p,main);
                         p.teleport(lf);
                     }
                 }
+            }
+        }
+        startTimer(main);
+    }
+
+    public void forcerBases(Main main)
+    {
+        Server s = main.getServer();
+        List<Player> joueurs = (List<Player>) s.getOnlinePlayers();
+        for(String f : factions.keySet())
+        {
+            List<String> membres = factions.get(f);
+            if(membres.size() != 0)
+            {
+                String m = membres.get(0);
+                for(Player p : joueurs)
+                {
+                    if(p.getName() == m)
+                    {
+                        creerBase(p);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public void startTimer(Main main)
+    {
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(main, new Runnable() {
+            @Override
+            public void run() {
+                ecoulerTemps(main);
+            }
+        },0,20);
+    }
+    public void donnerStuffBase(Player p, Main m)
+    {
+        ItemStack is = new ItemStack(Material.GLASS_BOTTLE);
+        ItemStack is2 = new ItemStack(Material.APPLE);
+        m.playerReset(p);
+        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,60*20,10));
+        p.setGameMode(GameMode.SURVIVAL);
+        p.getInventory().clear();
+        p.getInventory().setItem(EquipmentSlot.HAND,is);
+        p.getInventory().setItem(EquipmentSlot.OFF_HAND,is2);
+    }
+
+    public void ecoulerTemps(Main m)
+    {
+        temps += 1;
+        if(temps <= 10*60)
+        {
+            //Debut de partie
+            if(temps%10==0)
+            {
+                Main.callCommande("say "+ChatColor.RED+"Il vous reste "+(10*60-temps) + " secondes pour créer " +
+                        "vôtre base ! (/set_base)");
+            }
+            if(temps == 10*60)
+            {
+                forcerBases(m);
+            }
+        }
+        else
+        {
+            if(temps%(10*60) == 0)
+            {
+                Main.callCommande("say "+ChatColor.RED+"Vous jouez depuis "+(temps/60) + " minutes");
             }
         }
     }
