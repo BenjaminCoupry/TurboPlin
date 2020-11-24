@@ -15,7 +15,7 @@ public class TempCalculator implements Serializable {
         this.p = p;
     }
 
-    Player p;
+    transient Player p;
     static private final int RayonTemperature = 2;
     static private final int CoefficientEnfuissement = 2/45;
     static private final int tmax = 32;
