@@ -211,7 +211,7 @@ public class Main extends JavaPlugin implements Listener {
     public void onDisable() {
         super.onDisable();
         this.getServer().getLogger().info("TurboStop");
-        saveDatas("TurboPlinPlayerDatas");
+        saveDatas("world");
     }
 
     @Override
@@ -220,13 +220,13 @@ public class Main extends JavaPlugin implements Listener {
         this.getServer().getLogger().info("TurboStart");
         Recettes.ajouterRecettes(this);
         r = new Random();
-        immunise = true;
-        superdatas = chargerSuperdatas("TurboPlinPlayerDatas");
+        immunise = false;
+        superdatas = chargerSuperdatas("world");
         if(superdatas == null) {
             superdatas = new HashMap<> ();
         }
         UI=new HashMap<>();
-        factions = chargerFactions("TurboPlinPlayerDatas");
+        factions = chargerFactions("world");
         if(factions == null) {
             factions = new Factions();
         }
@@ -559,7 +559,7 @@ public class Main extends JavaPlugin implements Listener {
     }
     public void updateAffStats(PlayerSuperData ps)
     {
-        UI.get(ps.p.getName()).update(ps);
+        UI.get(ps.getP().getName()).update(ps);
         //updateAffStatsScoreBoard(ps);
     }
 
@@ -579,7 +579,7 @@ public class Main extends JavaPlugin implements Listener {
     }
     private void updateAffStatsScoreBoard(PlayerSuperData ps)
     {
-        Player p = ps.p;
+        Player p = ps.getP();
         Scoreboard sb = p.getScoreboard();
         Objective o = sb.getObjective("s_"+p.getName());
         Score varieteAlim = o.getScore(ChatColor.GOLD+ "Equilibre Alimentaire :");

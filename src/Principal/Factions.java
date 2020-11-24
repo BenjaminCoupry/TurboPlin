@@ -225,6 +225,7 @@ public class Factions implements Serializable {
     {
         Random r = main.r;
         Server s = main.getServer();
+        main.immunise = true;
         List<Player> joueurs = (List<Player>) s.getOnlinePlayers();
         Location centre = w.getWorldBorder().getCenter();
         double Rayon = w.getWorldBorder().getSize()/2.0;
