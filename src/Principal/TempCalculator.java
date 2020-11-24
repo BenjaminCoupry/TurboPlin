@@ -10,12 +10,16 @@ import org.bukkit.inventory.ItemStack;
 import java.io.Serializable;
 
 public class TempCalculator implements Serializable {
+    private static final double VariationJourNuit = 15;
     public void setP(Player p) {
         this.p = p;
     }
 
     Player p;
     static private final int RayonTemperature = 2;
+    static private final int CoefficientEnfuissement = 2/45;
+    static private final int tmax = 32;
+    static private final int tmin = -15;
 
     public TempCalculator(Player p) {
         this.p = p;
@@ -23,13 +27,16 @@ public class TempCalculator implements Serializable {
 
     public double calcTemperature()
     {
+        double amplitudeAtm = getAmplitudeEffetsAtmospheriques();
         double temperatureBiome = getTempBiome();
-        double tempSol = getIntensiteSoleil();
+        double soleil = getTempSoleil();
+        double tempAltitude = getTempAltitude();
         double tempProfondeur = getTempProfondeur();
         double tequip = getTempEquipement();
         double envir = getTempObjEnvir();
         double course = getTempCourrir();
-        return temperatureBiome+tempSol+tempProfondeur+tequip+envir+course;
+        double meteo = getTempMeteo();
+        return amplitudeAtm*(temperatureBiome+soleil+meteo+tempAltitude)+(1.0-amplitudeAtm)*(tempProfondeur)+tequip+envir+course;
     }
 
     public double getTempEquipement()
@@ -54,15 +61,31 @@ public class TempCalculator implements Serializable {
         }
         double k = (double)temps/13562.0;
         double I = (1.0-Math.cos(k*2.0*Math.PI))/2.0;
-        if(p.getWorld().hasStorm() || p.getWorld().isThundering())
-        {
-            I = I/2.0;
-        }
-        if(!PlayerSuperData.estExposeAuCiel(p)) {
-            I=I/2.0;
-        }
-        return I*25;
+        return I;
     }
+    public double getTempSoleil()
+    {
+        double tempbrute = p.getWorld().getTemperature(p.getLocation().getBlockX(), p.getLocation().getBlockY(),
+                p.getLocation().getBlockZ());
+        double k = (tempbrute + 0.5) / 2.5;
+        double isol = getIntensiteSoleil();
+        double soleilSurface =  VariationJourNuit * isol * k;
+        return soleilSurface;
+    }
+    public double getProfondeurEnfuissement()
+    {
+        //TODO calculer le max des blocs autour du joueur
+        int maxY = p.getWorld().getHighestBlockAt(p.getLocation()).getY();
+        int playerY = p.getLocation().getBlockY();
+        return Math.max(0,maxY-playerY);
+    }
+    public double getAmplitudeEffetsAtmospheriques()
+    {
+        return Math.exp(-CoefficientEnfuissement*getProfondeurEnfuissement());
+    }
+
+
+
     //Temperature
     public boolean hasLoreChaleur(ItemStack is)
     {
@@ -104,22 +127,40 @@ public class TempCalculator implements Serializable {
         }
     }
 
-    public double getTempProfondeur()
+    public double getTempAltitude()
     {
         double z= p.getLocation().getBlockY();
-        double delta = z-45;
-        return delta*(-0.2);
+        return z*(-0.2)+12;
+    }
+    public double getTempProfondeur()
+    {
+        double z= getProfondeurEnfuissement();
+        return z*(+0.4)+12;
     }
 
     public double getTempBiome()
     {
-        double tmin = -20;
-        double tmax = 47;
+        double tmin = -15;
+        double tmax = 32;
         double tempbrute= p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),
                 p.getLocation().getBlockZ());
         double k = (tempbrute+0.5)/2.5;
         double temperatureBiome = tmin+k*(tmax-tmin);
         return temperatureBiome;
+    }
+
+    public double getTempMeteo()
+    {
+        double tmet =0;
+        if(p.getWorld().hasStorm() || p.getWorld().isThundering())
+        {
+            tmet -= 3;
+        }
+        if(PlayerSuperData.estSousPluie(p))
+        {
+            tmet -=5;
+        }
+        return tmet;
     }
 
     public double getTempCourrir()

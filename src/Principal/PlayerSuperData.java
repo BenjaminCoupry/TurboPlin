@@ -264,7 +264,7 @@ public class PlayerSuperData implements Serializable {
 
     public void appliquerEffetsPluie(Random r)
     {
-        if(estSousPluie() && p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),p.getLocation().getBlockZ())<1) {
+        if(estSousPluie(p) && p.getWorld().getTemperature(p.getLocation().getBlockX(),p.getLocation().getBlockY(),p.getLocation().getBlockZ())<1) {
             ItemStack casque = p.getEquipment().getHelmet();
             if(casque != null && casque.getType() == Material.CHAINMAIL_HELMET && casque.getItemMeta().hasLore()) {
 
@@ -360,7 +360,7 @@ public class PlayerSuperData implements Serializable {
         }
     }
 
-    public boolean estSousPluie()
+    public static boolean estSousPluie(Player p)
     {
         return p.getLocation().getWorld().getEnvironment().equals(World.Environment.NORMAL) && estExposeAuCiel(p) && (p.getWorld().hasStorm() || p.getWorld().isThundering());
     }
