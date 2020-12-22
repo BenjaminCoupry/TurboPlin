@@ -12,6 +12,8 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.Random;
 
 public class InteractionsEntites {
+    static final int EXP_KILL = 20;
+    static final int EXP_KILL_ZOMBIE = 1;
     public static void Combat(EntityDamageByEntityEvent event)
     {
         Entity attaquant = event.getDamager();
@@ -45,7 +47,7 @@ public class InteractionsEntites {
     public static void PlayerTuePlayer(Player tueur, Player tue)
     {
         Main main = Main.getPlugin();
-        //TODO
+        main.factions.changerScore(tueur,EXP_KILL);
     }
     public static void ZombieAttaqueParJoueur(Entity Zombie, Entity Joueur, double damage)
     {
@@ -65,6 +67,8 @@ public class InteractionsEntites {
         if(r.nextDouble()<0.2) {
             z.getWorld().createExplosion(z.getLocation(), r.nextFloat()*5,true,true);
             z.getWorld().strikeLightning(z.getLocation());
+            Main main = Main.getPlugin();
+            main.factions.changerScore(p,EXP_KILL_ZOMBIE);
         }
     }
     public static void JoueurAttaqueParZombie(Entity Zombie, Entity Joueur, double damage)

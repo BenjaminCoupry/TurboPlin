@@ -14,6 +14,7 @@ import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
@@ -29,6 +30,7 @@ public class Main extends JavaPlugin implements Listener {
 
 
 
+    static final int EXP_MORT = -30;
     //Materiaux
     List<Material> tntOnly;
     Random r;
@@ -179,6 +181,18 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             }
         }
+        if(label.equalsIgnoreCase("trophee"))
+        {
+            if(sender instanceof  Player)
+            {
+                Player p = (Player) sender;
+                int res = validerTrophee(p);
+                if(res !=0) {
+                    sender.sendMessage("vous validez "+res+" points");
+                }
+                return true;
+            }
+        }
         if(label.equalsIgnoreCase("spread_factions"))
         {
             if(sender instanceof  Player)
@@ -247,6 +261,20 @@ public class Main extends JavaPlugin implements Listener {
         },0,5);
     }
 
+    //Score
+    public int validerTrophee(Player p)
+    {
+        //TODO
+        ItemStack is = p.getInventory().getItemInMainHand();
+        int level = Recettes.getTropheeLevel(is);
+        int nb = is.getAmount();
+        if(level >0)
+        {
+            p.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+            factions.changerScore(p,nb*level);
+        }
+        return level;
+    }
 
     //Events
     @EventHandler
@@ -385,6 +413,12 @@ public class Main extends JavaPlugin implements Listener {
         if(event.getBedEnterResult() == PlayerBedEnterEvent.BedEnterResult.OK) {
             superdatas.get(p.getName()).setFatigue(0);
         }
+    }
+
+    public void onDeath(PlayerDeathEvent event)
+    {
+        Player p = event.getEntity();
+        factions.changerScore(p,EXP_MORT);
     }
 
     @EventHandler

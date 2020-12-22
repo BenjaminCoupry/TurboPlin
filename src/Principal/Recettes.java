@@ -95,6 +95,72 @@ public class Recettes {
         return recipe;
     }
 
+    public static ShapedRecipe getTropheeIRecipe(Plugin p)
+    {
+        ItemStack item =new ItemStack(Material.FEATHER);
+        ItemMeta im = item.getItemMeta();
+        im.setDisplayName(ChatColor.BOLD+""+ChatColor.LIGHT_PURPLE+"TROPHEE");
+        List<String> lore = new ArrayList<>();
+        lore.add("Trophee I_");
+        im.setLore(lore);
+        item.setItemMeta(im);
+        NamespacedKey key = new NamespacedKey(p,"trophee1");
+        ShapedRecipe recipe = new ShapedRecipe(key,item);
+        recipe.shape("HHH","HHH","HHH");
+        recipe.setIngredient('H',Material.HAY_BLOCK);
+        return recipe;
+    }
+    public static ShapedRecipe getTropheeIIRecipe(Plugin p)
+    {
+        ItemStack item =new ItemStack(Material.FEATHER);
+        ItemMeta im = item.getItemMeta();
+        im.setDisplayName(ChatColor.BOLD+""+ChatColor.LIGHT_PURPLE+"TROPHEE");
+        List<String> lore = new ArrayList<>();
+        lore.add("Trophee II_");
+        im.setLore(lore);
+        item.setItemMeta(im);
+        NamespacedKey key = new NamespacedKey(p,"trophee2");
+        ShapedRecipe recipe = new ShapedRecipe(key,item);
+        recipe.shape("KKK","KKK","KKK");
+        recipe.setIngredient('K',Material.DRIED_KELP_BLOCK);
+        return recipe;
+    }
+    public static ShapedRecipe getTropheeIIIRecipe(Plugin p)
+    {
+        ItemStack item =new ItemStack(Material.FEATHER);
+        ItemMeta im = item.getItemMeta();
+        im.setDisplayName(ChatColor.BOLD+""+ChatColor.LIGHT_PURPLE+"TROPHEE");
+        List<String> lore = new ArrayList<>();
+        lore.add("Trophee III_");
+        im.setLore(lore);
+        item.setItemMeta(im);
+        NamespacedKey key = new NamespacedKey(p,"trophee3");
+        ShapedRecipe recipe = new ShapedRecipe(key,item);
+        recipe.shape("GGG","GDG","GGG");
+        recipe.setIngredient('D',Material.DIAMOND);
+        recipe.setIngredient('G',Material.CAKE);
+        return recipe;
+    }
+
+    public static ShapedRecipe getTropheeIVRecipe(Plugin p)
+    {
+        ItemStack item =new ItemStack(Material.FEATHER);
+        ItemMeta im = item.getItemMeta();
+        im.setDisplayName(ChatColor.BOLD+""+ChatColor.LIGHT_PURPLE+"TROPHEE");
+        List<String> lore = new ArrayList<>();
+        lore.add("Trophee IV_");
+        im.setLore(lore);
+        item.setItemMeta(im);
+        NamespacedKey key = new NamespacedKey(p,"trophee4");
+        ShapedRecipe recipe = new ShapedRecipe(key,item);
+        recipe.shape("BHB","BCB","BPB");
+        recipe.setIngredient('B',Material.IRON_BLOCK);
+        recipe.setIngredient('H',Material.IRON_HELMET);
+        recipe.setIngredient('C',Material.IRON_CHESTPLATE);
+        recipe.setIngredient('P',Material.IRON_LEGGINGS);
+        return recipe;
+    }
+
     //Ajouts
     public static void ajouterRecettesThermiques(Plugin p,Material concerne)
     {
@@ -125,6 +191,13 @@ public class Recettes {
         ajouterRecettesThermiques(p,Material.GOLDEN_BOOTS);
 
     }
+    public static void ajouterRecettesTrophees(Plugin p)
+    {
+        Bukkit.addRecipe(getTropheeIRecipe(p));
+        Bukkit.addRecipe(getTropheeIIRecipe(p));
+        Bukkit.addRecipe(getTropheeIIIRecipe(p));
+        Bukkit.addRecipe(getTropheeIVRecipe(p));
+    }
 
     public static void ajouterRecettes(Plugin p)
     {
@@ -132,6 +205,7 @@ public class Recettes {
         Bukkit.addRecipe(getNukeRecipe(p));
         Bukkit.addRecipe(getPetardRecipe(p));
         ajouterRecettesThermiques(p);
+        ajouterRecettesTrophees(p);
     }
 
 
@@ -158,7 +232,10 @@ public class Recettes {
             {
                 if(I.getItemMeta().hasLore())
                 {
-                    return true;
+                    if(I.getItemMeta().getLore().get(1).contains("DESTRUCTION"));
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -170,12 +247,43 @@ public class Recettes {
             if (I.getType() == Material.FLINT) {
                 if (I.getItemMeta().getDisplayName().contains("Petard")) {
                     if (I.getItemMeta().hasLore()) {
-                        return true;
+                        if(I.getItemMeta().getLore().get(0).contains("Petard"));
+                        {
+                            return true;
+                        }
                     }
                 }
             }
         }
         return false;
+    }
+    public static int getTropheeLevel(ItemStack I)
+    {
+        if(I != null) {
+            if (I.getType() == Material.FLINT) {
+                if (I.getItemMeta().getDisplayName().contains("TROPHEE")) {
+                    if (I.getItemMeta().hasLore()) {
+                        if(I.getItemMeta().getLore().get(0).contains("Trophee I_"));
+                        {
+                            return 10;
+                        }
+                        if(I.getItemMeta().getLore().get(0).contains("Trophee II_"));
+                        {
+                            return 20;
+                        }
+                        if(I.getItemMeta().getLore().get(0).contains("Trophee III_"));
+                        {
+                            return 30;
+                        }
+                        if(I.getItemMeta().getLore().get(0).contains("Trophee IV_"));
+                        {
+                            return 40;
+                        }
+                    }
+                }
+            }
+        }
+        return 0;
     }
 
     public static Material getModifTemp(String mod)
