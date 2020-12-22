@@ -19,7 +19,6 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.EventHandler;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.*;
 
@@ -37,6 +36,10 @@ public class Main extends JavaPlugin implements Listener {
     Map<String,BarSet> UI;
     Factions factions;
     public boolean immunise;
+    private static transient Main instance;
+    public static Main getPlugin(){
+        return instance;
+    }
 
     public void saveDatas(String path)
     {
@@ -167,21 +170,21 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             }
         }
+        if(label.equalsIgnoreCase("score"))
+        {
+            if(sender instanceof  Player)
+            {
+                Player p = (Player) sender;
+                sender.sendMessage(String.valueOf(factions.scoreDe(p)));
+                return true;
+            }
+        }
         if(label.equalsIgnoreCase("spread_factions"))
         {
             if(sender instanceof  Player)
             {
                 Player p = (Player) sender;
                 factions.spreadFactions(p.getWorld(),this);
-                return true;
-            }
-        }
-        if(label.equalsIgnoreCase("lootMe"))
-        {
-            if(sender instanceof  Player)
-            {
-                Player p = (Player) sender;
-                factions.creerLootZone(this);
                 return true;
             }
         }
@@ -216,6 +219,7 @@ public class Main extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        instance = this;
         super.onEnable();
         this.getServer().getLogger().info("TurboStart");
         Recettes.ajouterRecettes(this);

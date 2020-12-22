@@ -16,14 +16,17 @@ import java.util.*;
 public class Factions implements Serializable {
     private Map<String, List<String>> factions;
     private Map<String, Zone> bases;
+    private Map<String, Integer> scores;
     private List<Zone> lootZones;
     private static final int rayonBase = 30;
     private long temps;
+    private int score;
     public Factions()
     {
         factions = new HashMap<>();
         bases = new HashMap<>();
         lootZones = new ArrayList<>();
+        scores = new HashMap<>();
         temps =0;
     }
     public void ajouterJoueur(String faction, Player p)
@@ -34,6 +37,7 @@ public class Factions implements Serializable {
             List<String> nf = new ArrayList<>();
             nf.add(p.getName());
             factions.put(faction,nf);
+            scores.put(faction,0);
         }
         else
         {
@@ -59,6 +63,10 @@ public class Factions implements Serializable {
         if(bases.containsKey(f))
         {
             bases.remove(f);
+        }
+        if(scores.containsKey(f))
+        {
+            scores.remove(f);
         }
     }
     public String getStringFactions()
@@ -98,6 +106,29 @@ public class Factions implements Serializable {
             }
         }
         return null;
+    }
+    public int scoreDe(Player p)
+    {
+        String fact = factionDe(p);
+        if(fact != null)
+        {
+            if(scores.containsKey(fact))
+            {
+                return scores.get(fact);
+            }
+        }
+        return 0;
+    }
+    public void changerScore(Player p, int delta)
+    {
+        String fact = factionDe(p);
+        if(fact != null)
+        {
+            if(scores.containsKey(fact))
+            {
+                scores.put(fact,(scoreDe(p)+delta));
+            }
+        }
     }
     public Zone creerBase(Player p)
     {
@@ -297,7 +328,6 @@ public class Factions implements Serializable {
             }
         }
     }
-
 
     public void looter(Player p)
     {

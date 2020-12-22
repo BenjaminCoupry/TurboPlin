@@ -27,6 +27,25 @@ public class InteractionsEntites {
                 ZombieAttaqueParJoueur(victime,attaquant,event.getDamage());
             }
         }
+        if (attaquant instanceof Player) {
+            if (victime instanceof Player) {
+                PvP(attaquant,victime, event.getDamage());
+            }
+        }
+
+    }
+    public static void PvP(Entity attaquant, Entity defenseur, double damage)
+    {
+        Player pat = (Player) attaquant;
+        Player pdef = (Player) defenseur;
+        if (pdef.getHealth() - damage <= 0.5) {
+            PlayerTuePlayer(pat,pdef);
+        }
+    }
+    public static void PlayerTuePlayer(Player tueur, Player tue)
+    {
+        Main main = Main.getPlugin();
+        //TODO
     }
     public static void ZombieAttaqueParJoueur(Entity Zombie, Entity Joueur, double damage)
     {
