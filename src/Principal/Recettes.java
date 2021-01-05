@@ -263,19 +263,19 @@ public class Recettes {
             if (I.getType() == Material.FLINT) {
                 if (I.getItemMeta().getDisplayName().contains("TROPHEE")) {
                     if (I.getItemMeta().hasLore()) {
-                        if(I.getItemMeta().getLore().get(0).contains("Trophee I_"));
+                        if(I.getItemMeta().getLore().get(0).contains("Trophee I_"))
                         {
                             return 10;
                         }
-                        if(I.getItemMeta().getLore().get(0).contains("Trophee II_"));
+                        if(I.getItemMeta().getLore().get(0).contains("Trophee II_"))
                         {
                             return 20;
                         }
-                        if(I.getItemMeta().getLore().get(0).contains("Trophee III_"));
+                        if(I.getItemMeta().getLore().get(0).contains("Trophee III_"))
                         {
                             return 30;
                         }
-                        if(I.getItemMeta().getLore().get(0).contains("Trophee IV_"));
+                        if(I.getItemMeta().getLore().get(0).contains("Trophee IV_"))
                         {
                             return 40;
                         }

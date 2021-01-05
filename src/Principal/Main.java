@@ -12,10 +12,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -264,7 +261,6 @@ public class Main extends JavaPlugin implements Listener {
     //Score
     public int validerTrophee(Player p)
     {
-        //TODO
         ItemStack is = p.getInventory().getItemInMainHand();
         int level = Recettes.getTropheeLevel(is);
         int nb = is.getAmount();
@@ -422,10 +418,16 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onSplash(PotionSplashEvent event)
+    {
+        PotionPlusGestionnaire.gestSplash(event);
+    }
+    @EventHandler
     public void onManger(PlayerItemConsumeEvent event)
     {
         Material mange = event.getItem().getType();
         PlayerSuperData psd = superdatas.get(event.getPlayer().getName());
+        PotionPlusGestionnaire.gestConso(event);
         psd.Manger(mange);
     }
 
