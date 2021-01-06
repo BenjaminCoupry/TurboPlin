@@ -73,6 +73,7 @@ public class InteractionsEntites {
     }
     public static void JoueurAttaqueParZombie(Entity Zombie, Entity Joueur, double damage)
     {
+        //TODO tomber malade
         //Zombie tapé par Joueur
         Player p = (Player) Joueur;
         Zombie z = (Zombie) Zombie;

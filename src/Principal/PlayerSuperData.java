@@ -41,6 +41,8 @@ public class PlayerSuperData implements Serializable {
     List<Material> Menu;
     double eau;
     long cooldown;
+    boolean malade;
+    double intensiteMaladie;
     double fatigue;
     TempCalculator tc;
     private double lastExhaustion;
@@ -54,6 +56,8 @@ public class PlayerSuperData implements Serializable {
         temperature =20;
         eau = 100.0;
         fatigue = 0;
+        malade = false;
+        intensiteMaladie = 0;
         tc = new TempCalculator(p);
         lastExhaustion =0;
         varieteAlimentaire = 0;
@@ -105,6 +109,13 @@ public class PlayerSuperData implements Serializable {
     {
         double delta = Math.max(0.025,getTemperature()*0.025/9);
         eau = Math.max(0,eau - delta);
+    }
+    public void updateMaladie()
+    {
+        if(malade)
+        {
+            intensiteMaladie += 1;
+        }
     }
 
     public void updateFatigue()
@@ -166,6 +177,22 @@ public class PlayerSuperData implements Serializable {
 
 
     //Effets
+    public void tomberMalade()
+    {
+        malade = true;
+    }
+    public void soigner()
+    {
+        malade = false;
+        intensiteMaladie =0;
+    }
+    public void appliquerEffetsMaladie()
+    {
+        if(malade)
+        {
+            //TODO
+        }
+    }
     public void appliquerEffetTemperature()
     {
         statuts[0] = "OK";

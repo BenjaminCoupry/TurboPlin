@@ -521,6 +521,7 @@ public class Main extends JavaPlugin implements Listener {
         sd.updateSoif();
         sd.updateTemperature();
         sd.updateVarieteAlimentaire();
+        sd.updateMaladie();
         sd.updateFatigue();
         if(p.getGameMode() != GameMode.CREATIVE && p.getGameMode() != GameMode.SPECTATOR && !immunise) {
             factions.looter(p);
@@ -529,6 +530,7 @@ public class Main extends JavaPlugin implements Listener {
             sd.appliquerEffetsNutrition();
             sd.appliquerEffetsSoif();
             sd.appliquerEffetsFatigue();
+            sd.appliquerEffetsMaladie();
         }
         updateAffStats(sd);
     }
